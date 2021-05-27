@@ -23,7 +23,7 @@ export class CALL { constructor(readonly addr: Bit12) {} }
 // 3xkk - SE Vx, byte
 // Skip next instruction if Vx = kk.
 // The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
-export class SE { constructor(readonly register: Bit4, readonly value: Bit8) {} }
+export class SE_Vx_kk { constructor(readonly register: Bit4, readonly value: Bit8) {} }
 
 // 4xkk - SNE Vx, byte
 // Skip next instruction if Vx != kk.
@@ -33,22 +33,22 @@ export class SNE { constructor(readonly register: Bit4, readonly value: Bit8) {}
 // 5xy0 - SE Vx, Vy
 // Skip next instruction if Vx = Vy.
 // The interpreter compares register Vx to register Vy, and if they are equal, increments the program counter by 2.
-export class SER { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {} }
+export class SE_Vx_Vy { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {} }
 
 // 6xkk - LD Vx, byte
 // Set Vx = kk.
 // The interpreter puts the value kk into register Vx.
-export class LD { constructor(readonly register: Bit4, readonly value: Bit8) {}}
+export class LD_Vx_kk { constructor(readonly register: Bit4, readonly value: Bit8) {}}
 
 // 7xkk - ADD Vx, byte
 // Set Vx = Vx + kk.
 // Adds the value kk to the value of register Vx, then stores the result in Vx.
-export class ADD { constructor(readonly register: Bit4, readonly value: Bit8 ){} }
+export class ADD_Vx_kk { constructor(readonly register: Bit4, readonly value: Bit8 ){} }
 
 // 8xy0 - LD Vx, Vy
 // Set Vx = Vy.
 // Stores the value of register Vy in register Vx.
-export class LDR { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {} }
+export class LD_Vx_Vy { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {} }
 
 // 8xy1 - OR Vx, Vy
 // Set Vx = Vx OR Vy.
@@ -72,7 +72,7 @@ export class XOR { constructor(readonly registerA: Bit4, readonly registerB: Bit
 // Set Vx = Vx + Vy, set VF = carry.
 //
 // The values of Vx and Vy are added together. If the result is greater than 8 bits (i.e., > 255,) VF is set to 1, otherwise 0. Only the lowest 8 bits of the result are kept, and stored in Vx.
-export class ADDR { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {}}
+export class ADD_Vx_Vy { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {}}
 
 // 8xy5 - SUB Vx, Vy
 // Set Vx = Vx - Vy, set VF = NOT borrow.
@@ -84,7 +84,7 @@ export class SUB { constructor(readonly registerA: Bit4, readonly registerB: Bit
 // Set Vx = Vx SHR 1.
 //
 // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
-export class SHR { constructor(readonly registerA: Bit4, readonly registerB: Bit4) {} }
+export class SHR { constructor(readonly registerA: Bit4) {} }
 
 // 8xy7 - SUBN Vx, Vy
 // Set Vx = Vy - Vx, set VF = NOT borrow.
@@ -137,7 +137,7 @@ export class SKP { constructor(readonly register: Bit4) {} }
 // ExA1 - SKNP Vx
 // Skip next instruction if key with the value of Vx is not pressed.
 //
-// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
+// Checks the keyboard, and if the key corresponding to the value of Vx is currently in the start position, PC is increased by 2.
 export class SKNP { constructor(readonly register: Bit4) {} }
 
 // Fx07 - LD Vx, DT
@@ -184,20 +184,20 @@ export class LDFX { constructor(readonly register: Bit4) {} }
 export class LDBX { constructor(readonly register: Bit4) {} }
 
 // Fx55 - LD [I], Vx
-// Store registers V0 through Vx in memory starting at location I.
+// Store rs V0 through Vx in memory starting at location I.
 //
-// The interpreter copies the values of registers V0 through Vx into memory, starting at the address in I.
+// The interpreter copies the values of rs V0 through Vx into memory, starting at the address in I.
 export class LDIX { constructor(readonly register: Bit4) {} }
 
 // Fx65 - LD Vx, [I]
-// Read registers V0 through Vx from memory starting at location I.
+// Read rs V0 through Vx from memory starting at location I.
 //
-// The interpreter reads values from memory starting at location I into registers V0 through Vx.
+// The interpreter reads values from memory starting at location I into rs V0 through Vx.
 export class LDXI { constructor(readonly register: Bit4) {} }
 
 
-    export type Opcode = CLS | RET | JP | CALL | SE | SER | LD |
-                     ADD | LDR | OR | AND | XOR | ADDR | SUB | SHR | SUBN | SHL |
+    export type Opcode = CLS | RET | JP | CALL | SE_Vx_kk | SE_Vx_Vy | LD_Vx_kk |
+                     ADD_Vx_kk | LD_Vx_Vy | OR | AND | XOR | ADD_Vx_Vy | SUB | SHR | SUBN | SHL |
                      SNER | LDI | JP0 | RND | DRW | SKP | SKNP | LDXDT | LDK |
                      LDDTX | LDSTX | ADDIX | LDFX | LDBX | LDIX | LDXI
 
@@ -232,19 +232,19 @@ export function parse(opcode: Bit16): Opcode {
         }
         case 0x1: return new JP(address)
         case 0x2: return new CALL(address)
-        case 0x3: return new SE(a, value)
+        case 0x3: return new SE_Vx_kk(a, value)
         case 0x4: return new SNE(a, value)
-        case 0x5: if (n === 0) { return new SER(a, b) } else break
-        case 0x6: return new LD(a, value)
-        case 0x7: return new ADD(a, value)
+        case 0x5: if (n === 0) { return new SE_Vx_Vy(a, b) } else break
+        case 0x6: return new LD_Vx_kk(a, value)
+        case 0x7: return new ADD_Vx_kk(a, value)
         case 0x8: switch (n) {
-            case 0x0: return new LDR(a, b)
+            case 0x0: return new LD_Vx_Vy(a, b)
             case 0x1: return new OR(a, b)
             case 0x2: return new AND(a, b)
             case 0x3: return new XOR(a, b)
-            case 0x4: return new ADDR(a, b)
+            case 0x4: return new ADD_Vx_Vy(a, b)
             case 0x5: return new SUB(a, b)
-            case 0x6: return new SHR(a, b)
+            case 0x6: return new SHR(a)
             case 0x7: return new SUBN(a, b)
             case 0xe: return new SHL(a, b)
             default: error(opcode)
