@@ -28,7 +28,7 @@ export class SE_Vx_kk { constructor(readonly register: Bit4, readonly value: Bit
 // 4xkk - SNE Vx, byte
 // Skip next instruction if Vx != kk.
 // The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
-export class SNE { constructor(readonly register: Bit4, readonly value: Bit8) {} }
+export class SNE_Vx_kk { constructor(readonly register: Bit4, readonly value: Bit8) {} }
 
 // 5xy0 - SE Vx, Vy
 // Skip next instruction if Vx = Vy.
@@ -84,7 +84,7 @@ export class SUB { constructor(readonly registerA: Bit4, readonly registerB: Bit
 // Set Vx = Vx SHR 1.
 //
 // If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then Vx is divided by 2.
-export class SHR { constructor(readonly registerA: Bit4) {} }
+export class SHR { constructor(readonly register: Bit4) {} }
 
 // 8xy7 - SUBN Vx, Vy
 // Set Vx = Vy - Vx, set VF = NOT borrow.
@@ -96,19 +96,20 @@ export class SUBN { constructor(readonly registerA: Bit4, readonly registerB: Bi
 // Set Vx = Vx SHL 1.
 //
 // If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. Then Vx is multiplied by 2.
-export class SHL { constructor(readonly registerA: Bit4, readonly registerB: Bit4) { } }
+export class SHL { constructor(readonly register: Bit4) { } }
 
 // 9xy0 - SNE Vx, Vy
 // Skip next instruction if Vx != Vy.
 //
 // The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
-export class SNER { constructor(readonly registerA: Bit4, readonly registerB: Bit4) { } }
+export class SNE_Vx_Vy { constructor(readonly registerA: Bit4, readonly registerB: Bit4) { } }
 
 // Annn - LD I, addr
 // Set I = nnn.
 //
 // The value of register I is set to nnn.
-export class LDI { constructor(readonly address: Bit12) { } }
+// @TODO all addr params should be address
+export class LD_I_nnn { constructor(readonly address: Bit12) { } }
 
 // Bnnn - JP V0, addr
 // Jump to location nnn + V0.
@@ -196,9 +197,11 @@ export class LDIX { constructor(readonly register: Bit4) {} }
 export class LDXI { constructor(readonly register: Bit4) {} }
 
 
-    export type Opcode = CLS | RET | JP | CALL | SE_Vx_kk | SE_Vx_Vy | LD_Vx_kk |
-                     ADD_Vx_kk | LD_Vx_Vy | OR | AND | XOR | ADD_Vx_Vy | SUB | SHR | SUBN | SHL |
-                     SNER | LDI | JP0 | RND | DRW | SKP | SKNP | LDXDT | LDK |
+export type Opcode = CLS | RET | JP | CALL |
+                     SE_Vx_kk | SE_Vx_Vy | SNE_Vx_kk | SNE_Vx_Vy |
+                     LD_Vx_kk | LD_Vx_Vy |
+                     ADD_Vx_kk | OR | AND | XOR | ADD_Vx_Vy | SUB | SHR | SUBN | SHL |
+                     LD_I_nnn | JP0 | RND | DRW | SKP | SKNP | LDXDT | LDK |
                      LDDTX | LDSTX | ADDIX | LDFX | LDBX | LDIX | LDXI
 
 export function split4Bit4(opcode: Bit16): [Bit4, Bit4, Bit4, Bit4] {
@@ -218,6 +221,7 @@ export function findValue(opcode: Bit16):  Bit8 {
     return opcode & 0xff
 }
 
+// @TODO rename to decode
 export function parse(opcode: Bit16): Opcode {
 
     const [code, a, b, n] = split4Bit4(opcode)
@@ -233,7 +237,7 @@ export function parse(opcode: Bit16): Opcode {
         case 0x1: return new JP(address)
         case 0x2: return new CALL(address)
         case 0x3: return new SE_Vx_kk(a, value)
-        case 0x4: return new SNE(a, value)
+        case 0x4: return new SNE_Vx_kk(a, value)
         case 0x5: if (n === 0) { return new SE_Vx_Vy(a, b) } else break
         case 0x6: return new LD_Vx_kk(a, value)
         case 0x7: return new ADD_Vx_kk(a, value)
@@ -246,11 +250,11 @@ export function parse(opcode: Bit16): Opcode {
             case 0x5: return new SUB(a, b)
             case 0x6: return new SHR(a)
             case 0x7: return new SUBN(a, b)
-            case 0xe: return new SHL(a, b)
+            case 0xe: return new SHL(a)
             default: error(opcode)
         }
-        case 0x9: if (n === 0) { return new SNER(a, b) } else break
-        case 0xa: return new LDI(address)
+        case 0x9: if (n === 0) { return new SNE_Vx_Vy(a, b) } else break
+        case 0xa: return new LD_I_nnn(address)
         case 0xb: return new JP0(address)
         case 0xc: return new RND(a, value)
         case 0xd: return new DRW(a, b, n)

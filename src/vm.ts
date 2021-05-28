@@ -4,18 +4,19 @@ import {
     ADD_Vx_Vy,
     AND,
     CALL,
-    JP,
+    JP, JP0, LD_I_nnn,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
     OR,
     parse,
     SE_Vx_kk,
-    SE_Vx_Vy, SHR,
-    SNE, SUB,
+    SE_Vx_Vy, SHL, SHR,
+    SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
     XOR
 } from "./parse";
 
+// @TODO no need to pass a stack, should be init in cpu
 export interface CpuOptions {
     memory: Uint8Array,
     stack: Uint16Array,
@@ -109,9 +110,14 @@ export class CPU {
                 if (this.rs[i.registerA] === this.rs[i.registerB]) this.pc = this.pc + 2
                 break
             }
-            case SNE: {
-                let i = instruction as SNE
+            case SNE_Vx_kk: {
+                let i = instruction as SNE_Vx_kk
                 if (this.rs[i.register] !== i.value) this.pc = this.pc + 2
+                break
+            }
+            case SNE_Vx_Vy: {
+                let i = instruction as SNE_Vx_Vy
+                if (this.rs[i.registerA] !== this.rs[i.registerB]) this.pc = this.pc + 2
                 break
             }
             case LD_Vx_kk: {
@@ -153,14 +159,38 @@ export class CPU {
             }
             case SUB: {
                 let i = instruction as SUB
-                this.rs[15] = this.rs[i.registerA] < this.rs[i.registerB] ? 0x01 : 0x00
+                this.rs[15] = this.rs[i.registerA] > this.rs[i.registerB] ? 0x01 : 0x00
                 this.rs[i.registerA] = this.rs[i.registerA] - this.rs[i.registerB]
+                break
+            }
+            case SUBN: {
+                let i = instruction as SUBN
+                this.rs[15] = this.rs[i.registerB] > this.rs[i.registerA] ? 0x01 : 0x00
+                this.rs[i.registerA] = this.rs[i.registerB] - this.rs[i.registerA]
                 break
             }
             case SHR: {
                 let i = instruction as SHR
-                this.rs[15] = this.rs[i.registerA] & 0b1
-                this.rs[i.registerA] = this.rs[i.registerA] >> 1
+                this.rs[15] = this.rs[i.register] & 0b1
+                this.rs[i.register] = this.rs[i.register] >> 1
+                break
+            }
+            case SHL: {
+                let i = instruction as SHL
+                this.rs[15] = (this.rs[i.register] & 0b10000000) >> 7
+                this.rs[i.register] = this.rs[i.register] << 1
+                break
+            }
+            // @TODO mybe rename to LD_I
+            case LD_I_nnn: {
+                let i = instruction as LD_I_nnn
+                this.registerI = i.address
+                break
+            }
+            case JP0: {
+                let i = instruction as JP0
+                // @TODO check for memory out of bounds error
+                this.pc = this.rs[0] + i.address
                 break
             }
             default:

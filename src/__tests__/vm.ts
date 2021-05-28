@@ -3,15 +3,15 @@ import {
     ADD_Vx_Vy,
     AND,
     CALL,
-    JP,
+    JP, JP0, LD_I_nnn,
     LD_Vx_kk,
     LD_Vx_Vy,
     OR,
     SE_Vx_kk,
-    SE_Vx_Vy,
+    SE_Vx_Vy, SHL,
     SHR,
-    SNE,
-    SUB,
+    SNE_Vx_kk, SNE_Vx_Vy,
+    SUB, SUBN,
     XOR
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
@@ -19,12 +19,14 @@ import {CPU, CpuOptions} from "../vm";
 describe("exec", () => {
 
     describe("CLS", () => {
-        test.skip("Clear the display", () => {
+        test("Clear the display", () => {
+            throw new Error("@TODO")
         })
     })
 
     describe("RET", () => {
-        test.skip("Return from a subroutine.", () => {
+        test("Return from a subroutine.", () => {
+            throw new Error("@TODO")
         })
     })
 
@@ -71,20 +73,6 @@ describe("exec", () => {
         })
     })
 
-    describe("SNE Vx, byte", () => {
-        test("Skip next instruction if Vx != kk", () => {
-            let cpu = aCPU({programStart: 0x200})
-            cpu.rs[5] = 0x9
-
-            cpu.exec(new SNE(5, 0x9))
-            expect(cpu.pc).toEqual(0x200)
-
-            cpu.exec(new SNE(5, 0x0))
-            expect(cpu.pc).toEqual(0x202)
-        })
-    })
-
-
     describe("SE Vx, Vy", () => {
         test("Skip next instruction if Vx = Vy", () => {
             let cpu = aCPU({programStart: 0x200})
@@ -102,6 +90,38 @@ describe("exec", () => {
             expect(cpu.pc).toEqual(0x204)
         })
     })
+
+    describe("SNE Vx, byte", () => {
+        test("Skip next instruction if Vx != kk", () => {
+            let cpu = aCPU({programStart: 0x200})
+            cpu.rs[5] = 0x9
+
+            cpu.exec(new SNE_Vx_kk(5, 0x9))
+            expect(cpu.pc).toEqual(0x200)
+
+            cpu.exec(new SNE_Vx_kk(5, 0x0))
+            expect(cpu.pc).toEqual(0x202)
+        })
+    })
+
+    describe("SNE Vx, Vy", () => {
+        test("Skip next instruction if Vx != Vy", () => {
+            let cpu = aCPU({programStart: 0x200})
+            cpu.rs[5] = 0x9
+            cpu.rs[6] = 0x9
+            cpu.rs[7] = 0x4
+
+            cpu.exec(new SNE_Vx_Vy(5, 6))
+            expect(cpu.pc).toEqual(0x200)
+
+            cpu.exec(new SNE_Vx_Vy(5, 5))
+            expect(cpu.pc).toEqual(0x200)
+
+            cpu.exec(new SNE_Vx_Vy(5, 7))
+            expect(cpu.pc).toEqual(0x202)
+        })
+    })
+
 
     describe("LD Vx, byte", () => {
         test("Set Vx = kk", () => {
@@ -197,12 +217,12 @@ describe("exec", () => {
             cpu.exec(new SUB(0x1, 0x2))
             expect(cpu.rs[1]).toEqual(0x02)
             expect(cpu.rs[2]).toEqual(0x03)
-            expect(cpu.rs[15]).toEqual(0x00)
+            expect(cpu.rs[15]).toEqual(0x01)
 
             // now the borrow is set
             cpu.exec(new SUB(0x1, 0x2))
             expect(cpu.rs[1]).toEqual(0xff)
-            expect(cpu.rs[15]).toEqual(0x01)
+            expect(cpu.rs[15]).toEqual(0x00)
 
             // subtract from itself should be 0
             cpu.exec(new SUB(0x1, 0x1))
@@ -212,15 +232,25 @@ describe("exec", () => {
             // subtract biggest number from 0
             cpu.exec(new SUB(0x1, 0x3))
             expect(cpu.rs[1]).toEqual(0x01)
-            expect(cpu.rs[15]).toEqual(0x01)
+            expect(cpu.rs[15]).toEqual(0x00)
         })
     })
 
     describe("SUBN Vx, Vy", () => {
         test("Set Vx = Vy - Vx, set VF = NOT borrow", () => {
-            // If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and the results stored in Vx.
+            let cpu = aCPU()
+            cpu.rs[1] = 0x03
+            cpu.rs[2] = 0x05
+            cpu.rs[3] = 0x09
 
-            throw new Error("TODO")
+            cpu.exec(new SUBN(0x1, 0x2))
+            expect(cpu.rs[1]).toEqual(0x02)
+            expect(cpu.rs[2]).toEqual(0x05)
+            expect(cpu.rs[15]).toEqual(0x01)
+
+            cpu.exec(new SUBN(0x3, 0x1))
+            expect(cpu.rs[3]).toEqual(0xf9)
+            expect(cpu.rs[15]).toEqual(0x00)
         })
     })
 
@@ -240,43 +270,135 @@ describe("exec", () => {
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+
+    describe("SHL Vx {, Vy}", () => {
+        test("Set Vx = Vx SHL 1", () => {
+            let cpu = aCPU()
+            cpu.rs[1] = 0b00111111
+            cpu.rs[2] = 0b10111100
+
+            cpu.exec(new SHL(0x1))
+            expect(cpu.rs[1]).toEqual(0b01111110)
+            expect(cpu.rs[15]).toEqual(0x00)
+
+            cpu.exec(new SHL(0x2))
+            expect(cpu.rs[2]).toEqual(0b01111000)
+            expect(cpu.rs[15]).toEqual(0x01)
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("LD I, addr", () => {
+        test("Set I = nnn", () => {
+            let cpu = aCPU()
+            cpu.exec(new LD_I_nnn(0xefe))
+            expect(cpu.registerI).toEqual(0xefe)
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("JP V0, addr", () => {
+        test("Jump to location nnn + V0", () => {
+            let cpu = aCPU({programStart: 0x200})
+            cpu.rs[0] = 0x30
+
+            cpu.exec(new JP0(0x2ff))
+            expect(cpu.pc).toEqual(0x32f)
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    // @TODO add deterministic psuedo random number generator?
+    describe("Cxkk - RND Vx, byte", () => {
+        test("Set Vx = random byte AND kk", () => {
+            throw new Error("TODO")
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("DRW Vx, Vy, nibble", () => {
+        test("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
+            // The interpreter reads n bytes from memory,
+            // starting at the address stored in I.
+            // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
+            // Sprites are XORed onto the existing screen.
+            // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
+            // If the sprite is positioned so part of it is outside the coordinates of the display,
+            // it wraps around to the opposite side of the screen.
+            // See instruction 8xy3 for more information on XOR, and section 2.4, Display,
+            // for more information on the Chip-8 screen and sprites.
+            throw new Error("TODO")
+
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("SKP Vx", () => {
+        test("Skip next instruction if key with the value of Vx is pressed", () => {
+            // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position,
+            // PC is increased by 2.
+            throw new Error("TODO")
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("SKNP Vx", () => {
+        test("Skip next instruction if key with the value of Vx is not pressed", () => {
+            // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the start position,
+            // PC is increased by 2.
+            throw new Error("TODO")
         })
     })
 
-    describe("", () => {
-        test.skip("", () => {
+    describe("LD Vx, DT", () => {
+        test("Set Vx = delay timer value", () => {
+            // The value of DT is placed into Vx
+            throw new Error("@TODO")
+        })
+    })
+
+
+    describe("LD Vx, K", () => {
+        test("Wait for a key press, store the value of the key in Vx", () => {
+            // All execution stops until a key is pressed, then the value of that key is stored in Vx.
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("LD DT, Vx", () => {
+        test("Set delay timer = Vx", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("LD ST, Vx", () => {
+        test("Set sound timer = Vx", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("ADD I, Vx", () => {
+        test("Set I = I + Vx", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("LD F, Vx", () => {
+        test("Set I = location of sprite for digit Vx", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("LD B, Vx", () => {
+        test("Store BCD representation of Vx in memory locations I, I+1, and I+2", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+
+    describe("LD [I], Vx", () => {
+        test("Store rs V0 through Vx in memory starting at location I", () => {
+            throw new Error("@TODO")
+        })
+    })
+
+    describe("LD Vx, [I]", () => {
+        test("Read rs V0 through Vx from memory starting at location I", () => {
+            throw new Error("@TODO")
         })
     })
 })
