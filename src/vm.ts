@@ -1,15 +1,16 @@
 import {Bit16, Bit8} from "./types";
 import {
+    ADD_I_Vx,
     ADD_Vx_kk,
     ADD_Vx_Vy,
     AND,
     CALL,
-    JP, JP0, LD_I_nnn,
+    JP, JP0, LD_DT_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
     OR,
-    parse,
+    parse, RND,
     SE_Vx_kk,
     SE_Vx_Vy, SHL, SHR,
     SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
@@ -142,6 +143,11 @@ export class CPU {
                 this.rs[15] = (sum & (0b1 << 8)) >> 8
                 break
             }
+            case ADD_I_Vx: {
+                let i = instruction as ADD_I_Vx
+                this.registerI = this.registerI + this.rs[i.register]
+                break
+            }
             case OR: {
                 let i = instruction as OR
                 this.rs[i.registerA] = this.rs[i.registerA] | this.rs[i.registerB]
@@ -169,6 +175,11 @@ export class CPU {
                 this.rs[i.registerA] = this.rs[i.registerB] - this.rs[i.registerA]
                 break
             }
+            case RND: {
+                let i = instruction as RND
+                this.rs[i.register] = Math.floor(Math.random() * 0x100) & i.value
+                break
+            }
             case SHR: {
                 let i = instruction as SHR
                 this.rs[15] = this.rs[i.register] & 0b1
@@ -187,10 +198,37 @@ export class CPU {
                 this.registerI = i.address
                 break
             }
+            case LD_Vx_DT: {
+                let i = instruction as LD_Vx_DT
+                this.rs[i.register] = this.registerDT
+                break
+            }
+            case LD_DT_Vx: {
+                let i = instruction as LD_DT_Vx
+                this.registerDT = this.rs[i.register]
+                break
+            }
+            case LD_ST_Vx: {
+                let i = instruction as LD_ST_Vx
+                this.registerST = this.rs[i.register]
+                break
+            }
             case JP0: {
                 let i = instruction as JP0
-                // @TODO check for memory out of bounds error
+                // @TODO check for memory out of bounds error?
                 this.pc = this.rs[0] + i.address
+                break
+            }
+            case LD_I_Vx: {
+                let i = instruction as LD_I_Vx
+                for (let n = 0; n <= i.register; n++)
+                    this.memory[this.registerI + n] = this.rs[n]
+                break
+            }
+            case LD_Vx_I: {
+                let i = instruction as LD_Vx_I
+                for (let n = 0; n <= i.register; n++)
+                    this.rs[n] = this.memory[this.registerI + n]
                 break
             }
             default:

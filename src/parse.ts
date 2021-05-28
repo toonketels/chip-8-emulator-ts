@@ -145,64 +145,66 @@ export class SKNP { constructor(readonly register: Bit4) {} }
 // Set Vx = delay timer value.
 //
 // The value of DT is placed into Vx.
-export class LDXDT { constructor(readonly register: Bit4) {} }
+export class LD_Vx_DT { constructor(readonly register: Bit4) {} }
 
 // Fx0A - LD Vx, K
 // Wait for a key press, store the value of the key in Vx.
 //
 // All execution stops until a key is pressed, then the value of that key is stored in Vx.
-export class LDK { constructor(readonly register: Bit4) {} }
+export class LD_Vx_K { constructor(readonly register: Bit4) {} }
 
 // Fx15 - LD DT, Vx
 // Set delay timer = Vx.
 //
 // DT is set equal to the value of Vx.
-export class LDDTX { constructor(readonly register: Bit4) {} }
+export class LD_DT_Vx { constructor(readonly register: Bit4) {} }
 
 
 // Fx18 - LD ST, Vx
 // Set sound timer = Vx.
 //
 // ST is set equal to the value of Vx.
-export class LDSTX { constructor(readonly register: Bit4) {} }
+export class LD_ST_Vx { constructor(readonly register: Bit4) {} }
 
 // Fx1E - ADD I, Vx
 // Set I = I + Vx.
 //
 // The values of I and Vx are added, and the results are stored in I.
-export class ADDIX { constructor(readonly register: Bit4) {} }
+export class ADD_I_Vx { constructor(readonly register: Bit4) {} }
 
 // Fx29 - LD F, Vx
 // Set I = location of sprite for digit Vx.
 //
 // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx. See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
-export class LDFX { constructor(readonly register: Bit4) {} }
+export class LD_F_Vx { constructor(readonly register: Bit4) {} }
 
 // Fx33 - LD B, Vx
 // Store BCD representation of Vx in memory locations I, I+1, and I+2.
 //
 // The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2.
-export class LDBX { constructor(readonly register: Bit4) {} }
+export class LD_B_Vx { constructor(readonly register: Bit4) {} }
 
 // Fx55 - LD [I], Vx
 // Store rs V0 through Vx in memory starting at location I.
 //
 // The interpreter copies the values of rs V0 through Vx into memory, starting at the address in I.
-export class LDIX { constructor(readonly register: Bit4) {} }
+export class LD_I_Vx { constructor(readonly register: Bit4) {} }
 
 // Fx65 - LD Vx, [I]
 // Read rs V0 through Vx from memory starting at location I.
 //
 // The interpreter reads values from memory starting at location I into rs V0 through Vx.
-export class LDXI { constructor(readonly register: Bit4) {} }
+export class LD_Vx_I { constructor(readonly register: Bit4) {} }
 
 
 export type Opcode = CLS | RET | JP | CALL |
                      SE_Vx_kk | SE_Vx_Vy | SNE_Vx_kk | SNE_Vx_Vy |
-                     LD_Vx_kk | LD_Vx_Vy |
-                     ADD_Vx_kk | OR | AND | XOR | ADD_Vx_Vy | SUB | SHR | SUBN | SHL |
-                     LD_I_nnn | JP0 | RND | DRW | SKP | SKNP | LDXDT | LDK |
-                     LDDTX | LDSTX | ADDIX | LDFX | LDBX | LDIX | LDXI
+                     LD_Vx_kk | LD_Vx_Vy | LD_Vx_DT | LD_Vx_K | LD_I_nnn | LD_DT_Vx |
+                     LD_ST_Vx | ADD_I_Vx | LD_F_Vx | LD_B_Vx | LD_I_Vx | LD_Vx_I |
+                     ADD_Vx_kk | ADD_Vx_Vy |
+                     OR | AND | XOR | SUB | SHR | SUBN | SHL |
+                     JP0 | RND | DRW | SKP | SKNP
+
 
 export function split4Bit4(opcode: Bit16): [Bit4, Bit4, Bit4, Bit4] {
     let a = (opcode & (0xf << 12)) >> 12
@@ -260,15 +262,15 @@ export function parse(opcode: Bit16): Opcode {
         case 0xd: return new DRW(a, b, n)
         case 0xe: if (b === 0x9 && n === 0xe) return new SKP(a)
         case 0xe: if (b === 0xa && n === 0x1) return new SKNP(a)
-        case 0xf: if (b === 0x0 && n === 0x7) return new LDXDT(a)
-        case 0xf: if (b === 0x0 && n === 0xa) return new LDK(a)
-        case 0xf: if (b === 0x1 && n === 0x5) return new LDDTX(a)
-        case 0xf: if (b === 0x1 && n === 0x8) return new LDSTX(a)
-        case 0xf: if (b === 0x1 && n === 0xe) return new ADDIX(a)
-        case 0xf: if (b === 0x2 && n === 0x9) return new LDFX(a)
-        case 0xf: if (b === 0x3 && n === 0x3) return new LDBX(a)
-        case 0xf: if (b === 0x5 && n === 0x5) return new LDIX(a)
-        case 0xf: if (b === 0x6 && n === 0x5) return new LDXI(a)
+        case 0xf: if (b === 0x0 && n === 0x7) return new LD_Vx_DT(a)
+        case 0xf: if (b === 0x0 && n === 0xa) return new LD_Vx_K(a)
+        case 0xf: if (b === 0x1 && n === 0x5) return new LD_DT_Vx(a)
+        case 0xf: if (b === 0x1 && n === 0x8) return new LD_ST_Vx(a)
+        case 0xf: if (b === 0x1 && n === 0xe) return new ADD_I_Vx(a)
+        case 0xf: if (b === 0x2 && n === 0x9) return new LD_F_Vx(a)
+        case 0xf: if (b === 0x3 && n === 0x3) return new LD_B_Vx(a)
+        case 0xf: if (b === 0x5 && n === 0x5) return new LD_I_Vx(a)
+        case 0xf: if (b === 0x6 && n === 0x5) return new LD_Vx_I(a)
     }
 
 

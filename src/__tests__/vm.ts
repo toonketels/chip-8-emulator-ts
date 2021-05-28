@@ -5,27 +5,27 @@ import {
     CALL,
     JP, JP0, LD_I_nnn,
     LD_Vx_kk,
-    LD_Vx_Vy,
+    LD_Vx_Vy, LD_DT_Vx,
     OR,
     SE_Vx_kk,
     SE_Vx_Vy, SHL,
     SHR,
     SNE_Vx_kk, SNE_Vx_Vy,
     SUB, SUBN,
-    XOR
+    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
 
 describe("exec", () => {
 
     describe("CLS", () => {
-        test("Clear the display", () => {
+        test.skip("Clear the display", () => {
             throw new Error("@TODO")
         })
     })
 
     describe("RET", () => {
-        test("Return from a subroutine.", () => {
+        test.skip("Return from a subroutine.", () => {
             throw new Error("@TODO")
         })
     })
@@ -219,7 +219,7 @@ describe("exec", () => {
             expect(cpu.rs[2]).toEqual(0x03)
             expect(cpu.rs[15]).toEqual(0x01)
 
-            // now the borrow is set
+            // without flag
             cpu.exec(new SUB(0x1, 0x2))
             expect(cpu.rs[1]).toEqual(0xff)
             expect(cpu.rs[15]).toEqual(0x00)
@@ -305,15 +305,40 @@ describe("exec", () => {
         })
     })
 
-    // @TODO add deterministic psuedo random number generator?
-    describe("Cxkk - RND Vx, byte", () => {
+    // @TODO add deterministic pseudo random number generator?
+    describe("RND Vx, byte", () => {
         test("Set Vx = random byte AND kk", () => {
-            throw new Error("TODO")
+
+            let cpu = aCPU()
+            let instruction = new RND(0x4, 0xef)
+
+            let values = new Array(10)
+                .fill(0)
+                .map((v, i) => {
+                    cpu.exec(instruction)
+                    return cpu.rs[0x4]
+                })
+
+            expectSomewhatRandom(values)
+
+            function expectSomewhatRandom(values: number[]) {
+                // Check we have mostly different values.
+                // Not a real randomness through uniform
+                // distribution check but good enough.
+                const threshold = 3
+                let duplicates = 0
+                let previous = undefined
+                for (let value of values.sort()) {
+                    if (value === previous) duplicates++
+                    previous = value
+                }
+                expect(duplicates).toBeLessThanOrEqual(threshold)
+            }
         })
     })
 
     describe("DRW Vx, Vy, nibble", () => {
-        test("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
+        test.skip("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
             // The interpreter reads n bytes from memory,
             // starting at the address stored in I.
             // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
@@ -329,7 +354,7 @@ describe("exec", () => {
     })
 
     describe("SKP Vx", () => {
-        test("Skip next instruction if key with the value of Vx is pressed", () => {
+        test.skip("Skip next instruction if key with the value of Vx is pressed", () => {
             // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position,
             // PC is increased by 2.
             throw new Error("TODO")
@@ -337,7 +362,7 @@ describe("exec", () => {
     })
 
     describe("SKNP Vx", () => {
-        test("Skip next instruction if key with the value of Vx is not pressed", () => {
+        test.skip("Skip next instruction if key with the value of Vx is not pressed", () => {
             // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the start position,
             // PC is increased by 2.
             throw new Error("TODO")
@@ -346,14 +371,16 @@ describe("exec", () => {
 
     describe("LD Vx, DT", () => {
         test("Set Vx = delay timer value", () => {
-            // The value of DT is placed into Vx
-            throw new Error("@TODO")
+            let cpu = aCPU()
+            cpu.registerDT = 0xee
+            cpu.exec(new LD_Vx_DT(0x1))
+            expect(cpu.rs[0x1]).toEqual(0xee)
         })
     })
 
 
     describe("LD Vx, K", () => {
-        test("Wait for a key press, store the value of the key in Vx", () => {
+        test.skip("Wait for a key press, store the value of the key in Vx", () => {
             // All execution stops until a key is pressed, then the value of that key is stored in Vx.
             throw new Error("@TODO")
         })
@@ -361,30 +388,41 @@ describe("exec", () => {
 
     describe("LD DT, Vx", () => {
         test("Set delay timer = Vx", () => {
-            throw new Error("@TODO")
+            let cpu = aCPU()
+            cpu.rs[0x1] = 0xee
+            cpu.exec(new LD_DT_Vx(0x1))
+            expect(cpu.registerDT).toEqual(0xee)
         })
     })
 
     describe("LD ST, Vx", () => {
         test("Set sound timer = Vx", () => {
-            throw new Error("@TODO")
+            let cpu = aCPU()
+            cpu.rs[0x1] = 0xee
+            cpu.exec(new LD_ST_Vx(0x1))
+            expect(cpu.registerST).toEqual(0xee)
         })
     })
 
     describe("ADD I, Vx", () => {
         test("Set I = I + Vx", () => {
-            throw new Error("@TODO")
+            let cpu = aCPU()
+            cpu.registerI = 0x11ff
+            cpu.rs[0x1] = 0xee
+            cpu.exec(new ADD_I_Vx(0x1))
+            expect(cpu.registerI).toEqual(0x12ed)
+
         })
     })
 
     describe("LD F, Vx", () => {
-        test("Set I = location of sprite for digit Vx", () => {
+        test.skip("Set I = location of sprite for digit Vx", () => {
             throw new Error("@TODO")
         })
     })
 
     describe("LD B, Vx", () => {
-        test("Store BCD representation of Vx in memory locations I, I+1, and I+2", () => {
+        test.skip("Store BCD representation of Vx in memory locations I, I+1, and I+2", () => {
             throw new Error("@TODO")
         })
     })
@@ -392,13 +430,35 @@ describe("exec", () => {
 
     describe("LD [I], Vx", () => {
         test("Store rs V0 through Vx in memory starting at location I", () => {
-            throw new Error("@TODO")
+
+            let cpu = aCPU({memory: new Uint8Array(50)})
+            new Array(16).fill(0).forEach((_, i) => cpu.rs[i] = 10 + i)
+
+            cpu.registerI = 0x002
+            cpu.exec(new LD_I_Vx(0x3))
+
+            for (let i = 0; i <= 0x3; i++)
+                expect(cpu.memory[i + 0x002]).toEqual(cpu.rs[i])
+
+            // again another location
+            cpu.registerI = 0x020
+            cpu.exec(new LD_I_Vx(0xf))
+
+            for (let i = 0; i <= 0xf; i++)
+                expect(cpu.memory[i + 0x020]).toEqual(cpu.rs[i])
         })
     })
 
     describe("LD Vx, [I]", () => {
         test("Read rs V0 through Vx from memory starting at location I", () => {
-            throw new Error("@TODO")
+            let cpu = aCPU({memory: new Uint8Array(50)})
+            new Array(16).fill(0).forEach((_, i) => cpu.memory[0x002 + i] = 10 + i)
+
+            cpu.registerI = 0x002
+            cpu.exec(new LD_Vx_I(0x4))
+
+            for (let i = 0; i <= 0x4; i++)
+                expect(cpu.rs[i]).toEqual(cpu.memory[0x002 + i] = 10 + i)
         })
     })
 })
