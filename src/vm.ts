@@ -5,12 +5,12 @@ import {
     ADD_Vx_Vy,
     AND,
     CALL,
-    JP, JP0, LD_DT_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
+    JP, JP0, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
     OR,
-    parse, RND,
+    parse, RET, RND,
     SE_Vx_kk,
     SE_Vx_Vy, SHL, SHR,
     SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
@@ -60,6 +60,10 @@ export class CPU {
     public stack: Uint16Array
     public memory: Uint8Array
 
+    // @TODO let vm pass the base address if it is loading the sprite data
+    private static SPRITE_SIZE = 5
+    private static SPRITE_BASE_ADDRESS = 0x000
+
     constructor({memory, stack, programStart}: CpuOptions) {
         this.memory = memory
         this.stack = stack
@@ -89,6 +93,10 @@ export class CPU {
 
         // @TODO find a better way to narrow type
         switch (instruction.constructor) {
+            case RET: {
+                this.pc = this.stack[--this.sc]
+                break
+            }
             case JP: {
                 let i = instruction as JP
                 this.pc = i.addr
@@ -119,6 +127,11 @@ export class CPU {
             case SNE_Vx_Vy: {
                 let i = instruction as SNE_Vx_Vy
                 if (this.rs[i.registerA] !== this.rs[i.registerB]) this.pc = this.pc + 2
+                break
+            }
+            case LD_F_Vx: {
+                let i = instruction as LD_F_Vx
+                this.registerI = CPU.SPRITE_BASE_ADDRESS + this.rs[i.register] * CPU.SPRITE_SIZE
                 break
             }
             case LD_Vx_kk: {

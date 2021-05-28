@@ -12,7 +12,7 @@ import {
     SHR,
     SNE_Vx_kk, SNE_Vx_Vy,
     SUB, SUBN,
-    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND
+    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
 
@@ -25,8 +25,16 @@ describe("exec", () => {
     })
 
     describe("RET", () => {
-        test.skip("Return from a subroutine.", () => {
-            throw new Error("@TODO")
+        test("Return from a subroutine.", () => {
+            let cpu = aCPU()
+            cpu.pc = 0x400
+            cpu.stack[0] = 0x300
+            cpu.stack[1] = 0x350
+            cpu.sc = 2
+
+            cpu.exec(new RET())
+            expect(cpu.pc).toEqual(0x350)
+            expect(cpu.sc).toEqual(1)
         })
     })
 
@@ -416,8 +424,16 @@ describe("exec", () => {
     })
 
     describe("LD F, Vx", () => {
-        test.skip("Set I = location of sprite for digit Vx", () => {
-            throw new Error("@TODO")
+        test("Set I = location of sprite for digit Vx", () => {
+            let cpu = aCPU()
+            cpu.rs[0x1] = 0x0
+            cpu.rs[0x2] = 0xf
+
+            cpu.exec(new LD_F_Vx(0x1))
+            expect(cpu.registerI).toEqual(0x000)
+
+            cpu.exec(new LD_F_Vx(0x2))
+            expect(cpu.registerI).toEqual(0x04b)
         })
     })
 
