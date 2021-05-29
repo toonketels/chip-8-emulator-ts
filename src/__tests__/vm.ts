@@ -12,15 +12,33 @@ import {
     SHR,
     SNE_Vx_kk, SNE_Vx_Vy,
     SUB, SUBN,
-    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx
+    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
 
 describe("exec", () => {
 
     describe("CLS", () => {
-        test.skip("Clear the display", () => {
-            throw new Error("@TODO")
+        test("Clear the display", () => {
+
+            let cpu = aCPU({ memory: new Uint8Array(0x200)})
+            paintScreen();
+
+            cpu.exec(new CLS())
+            expectScreenCleared();
+
+            function paintScreen() {
+                // paint on screen by flipping bits to 1
+                for (let i = 0; i < CPU.SCREEN_SIZE; i++)
+                    cpu.memory[CPU.SCREEN_BASE_ADDRESS + i] = 0xff
+            }
+
+            function expectScreenCleared() {
+                // all pixels off means all bits to 0
+                for (let i = 0; i < CPU.SCREEN_SIZE; i++) {
+                    expect(cpu.memory[CPU.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
+                }
+            }
         })
     })
 
@@ -438,8 +456,18 @@ describe("exec", () => {
     })
 
     describe("LD B, Vx", () => {
-        test.skip("Store BCD representation of Vx in memory locations I, I+1, and I+2", () => {
-            throw new Error("@TODO")
+        test("Store BCD representation of Vx in memory locations I, I+1, and I+2", () => {
+            let cpu = aCPU()
+            cpu.registerI = 0x002
+            cpu.rs[0x1] = 0xef // 239
+
+            cpu.exec(new LD_B_Vx(0x1))
+
+            expect(cpu.memory[0x002]).toEqual(2)
+            expect(cpu.memory[0x003]).toEqual(3)
+            expect(cpu.memory[0x004]).toEqual(9)
+
+
         })
     })
 

@@ -4,8 +4,8 @@ import {
     ADD_Vx_kk,
     ADD_Vx_Vy,
     AND,
-    CALL,
-    JP, JP0, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
+    CALL, CLS,
+    JP, JP0, LD_B_Vx, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
@@ -63,6 +63,14 @@ export class CPU {
     // @TODO let vm pass the base address if it is loading the sprite data
     private static SPRITE_SIZE = 5
     private static SPRITE_BASE_ADDRESS = 0x000
+    // memory mapped IO
+    // @TODO pass from vm
+    public static SCREEN_BASE_ADDRESS = 0x050
+    public static SCREEN_WIDTH = 64
+    public static SCREEN_HEIGHT = 32
+    public static SCREEN_SIZE = CPU.SCREEN_WIDTH * CPU.SCREEN_HEIGHT / 8
+    public static KEY_PRESSED_BASE_ADDRESS = 0x150
+    public static KEY_VALUE_BASE_ADDRESS = 0x151
 
     constructor({memory, stack, programStart}: CpuOptions) {
         this.memory = memory
@@ -242,6 +250,28 @@ export class CPU {
                 let i = instruction as LD_Vx_I
                 for (let n = 0; n <= i.register; n++)
                     this.rs[n] = this.memory[this.registerI + n]
+                break
+            }
+            case LD_B_Vx: {
+                // BCD: Binary Coded Decimal: https://en.wikipedia.org/wiki/Binary-coded_decimal
+                let i = instruction as LD_B_Vx
+                let n = this.rs[i.register]
+                // hundreds
+                this.memory[this.registerI] = Math.floor(n / 100)
+                // tens
+                this.memory[this.registerI + 1] = Math.floor((n % 100) / 10)
+                // ones
+                this.memory[this.registerI + 2] = (n % 100) % 10
+                break
+            }
+            case CLS: {
+                let screenBegin = CPU.SCREEN_BASE_ADDRESS
+                let screenEnd = CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE
+
+                // flip app bits off
+                for (let i = screenBegin; i < screenEnd; i++)
+                    this.memory[i] = 0x00
+
                 break
             }
             default:
