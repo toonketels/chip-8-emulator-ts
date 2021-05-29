@@ -5,14 +5,14 @@ import {
     ADD_Vx_Vy,
     AND,
     CALL, CLS,
-    JP, JP0, LD_B_Vx, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I,
+    JP, JP0, LD_B_Vx, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I, LD_Vx_K,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
     OR,
     parse, RET, RND,
     SE_Vx_kk,
-    SE_Vx_Vy, SHL, SHR,
+    SE_Vx_Vy, SHL, SHR, SKNP, SKP,
     SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
     XOR
 } from "./parse";
@@ -69,8 +69,8 @@ export class CPU {
     public static SCREEN_WIDTH = 64
     public static SCREEN_HEIGHT = 32
     public static SCREEN_SIZE = CPU.SCREEN_WIDTH * CPU.SCREEN_HEIGHT / 8
-    public static KEY_PRESSED_BASE_ADDRESS = 0x150
-    public static KEY_VALUE_BASE_ADDRESS = 0x151
+    public static KEY_PRESSED = 0x150
+    public static KEY_VALUE = 0x151
 
     constructor({memory, stack, programStart}: CpuOptions) {
         this.memory = memory
@@ -264,6 +264,17 @@ export class CPU {
                 this.memory[this.registerI + 2] = (n % 100) % 10
                 break
             }
+            case LD_Vx_K: {
+                // @TODO should we increment pc by 2 after each cycle? if so, we need to decr by 2 to exec same inst again
+                let i = instruction as LD_Vx_K
+                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff
+                if (!isKeyPressed)
+                    break
+                this.rs[i.register] = this.memory[CPU.KEY_VALUE]
+                this.pc = this.pc + 2
+
+                break
+            }
             case CLS: {
                 let screenBegin = CPU.SCREEN_BASE_ADDRESS
                 let screenEnd = CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE
@@ -272,6 +283,18 @@ export class CPU {
                 for (let i = screenBegin; i < screenEnd; i++)
                     this.memory[i] = 0x00
 
+                break
+            }
+            case SKP: {
+                let i = instruction as SKP
+                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff && this.memory[CPU.KEY_VALUE] === this.rs[i.register]
+                if (isKeyPressed) this.pc =  this.pc + 2
+                break
+            }
+            case SKNP: {
+                let i = instruction as SKNP
+                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff && this.memory[CPU.KEY_VALUE] === this.rs[i.register]
+                if (!isKeyPressed) this.pc =  this.pc + 2
                 break
             }
             default:

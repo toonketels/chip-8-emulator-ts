@@ -12,7 +12,7 @@ import {
     SHR,
     SNE_Vx_kk, SNE_Vx_Vy,
     SUB, SUBN,
-    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS
+    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS, SKP, SKNP, LD_Vx_K
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
 
@@ -380,18 +380,54 @@ describe("exec", () => {
     })
 
     describe("SKP Vx", () => {
-        test.skip("Skip next instruction if key with the value of Vx is pressed", () => {
+        test("Skip next instruction if key with the value of Vx is pressed", () => {
             // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position,
             // PC is increased by 2.
-            throw new Error("TODO")
+
+            let cpu = aCPU({memory: new Uint8Array(0x200)})
+            cpu.rs[0x1] = 0x9
+            cpu.pc = 0x200
+
+            // skip
+            pressKey(cpu,0x9);
+            cpu.exec(new SKP(0x1))
+            expect(cpu.pc).toEqual(0x202)
+
+            // no skip
+            releaseKey(cpu)
+            cpu.exec(new SKP(0x1))
+            expect(cpu.pc).toEqual(0x202)
+
+            // no skip
+            pressKey(cpu,0xf)
+            cpu.exec(new SKP(0x1))
+            expect(cpu.pc).toEqual(0x202)
         })
     })
 
     describe("SKNP Vx", () => {
-        test.skip("Skip next instruction if key with the value of Vx is not pressed", () => {
+        test("Skip next instruction if key with the value of Vx is not pressed", () => {
             // Checks the keyboard, and if the key corresponding to the value of Vx is currently in the start position,
             // PC is increased by 2.
-            throw new Error("TODO")
+
+            let cpu = aCPU({memory: new Uint8Array(0x200)})
+            cpu.rs[0x1] = 0x9
+            cpu.pc = 0x200
+
+            // no skip
+            pressKey(cpu, 0x9);
+            cpu.exec(new SKNP(0x1))
+            expect(cpu.pc).toEqual(0x200)
+
+            // skip bc not pressed
+            releaseKey(cpu)
+            cpu.exec(new SKNP(0x1))
+            expect(cpu.pc).toEqual(0x202)
+
+            // skip bc different key
+            pressKey(cpu, 0xf)
+            cpu.exec(new SKNP(0x1))
+            expect(cpu.pc).toEqual(0x204)
         })
     })
 
@@ -406,9 +442,31 @@ describe("exec", () => {
 
 
     describe("LD Vx, K", () => {
-        test.skip("Wait for a key press, store the value of the key in Vx", () => {
+        test("Wait for a key press, store the value of the key in Vx", () => {
             // All execution stops until a key is pressed, then the value of that key is stored in Vx.
-            throw new Error("@TODO")
+
+            // Waiting means do nothing as in the next cycle the same command will be loaded and we reevaluate
+            // Keyboard can put the keypress before each cycle
+            // @TODO validate is this is workable
+
+            let cpu = aCPU({memory: new Uint8Array(0x200)})
+            cpu.pc = 0x200
+
+            releaseKey(cpu);
+
+            cpu.exec(new LD_Vx_K(0x1))
+            expect(cpu.pc).toEqual(0x200)
+            expect(cpu.rs[0x1]).toEqual(0x00)
+
+            cpu.exec(new LD_Vx_K(0x1))
+            expect(cpu.pc).toEqual(0x200)
+            expect(cpu.rs[0x1]).toEqual(0x00)
+
+            pressKey(cpu, 0xf)
+
+            cpu.exec(new LD_Vx_K(0x1))
+            expect(cpu.pc).toEqual(0x202)
+            expect(cpu.rs[0x1]).toEqual(0xf)
         })
     })
 
@@ -471,7 +529,6 @@ describe("exec", () => {
         })
     })
 
-
     describe("LD [I], Vx", () => {
         test("Store rs V0 through Vx in memory starting at location I", () => {
 
@@ -514,4 +571,13 @@ function aCPU(opts: Partial<CpuOptions> = {}): CPU {
     let cpu = new CPU(options)
 
     return cpu;
+}
+
+function pressKey(cpu: CPU, key: number) {
+    cpu.memory[CPU.KEY_VALUE] = key
+    cpu.memory[CPU.KEY_PRESSED] = 0xff
+}
+
+function releaseKey(cpu: CPU) {
+    cpu.memory[CPU.KEY_PRESSED] = 0x00
 }
