@@ -1,0 +1,701 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`exec DRW Vx, Vy, nibble Adds padding to align bytes in memory when drawing pixels on x coordinate 1`] = `
+"                                                                
+   xxxxxxxx                                                     
+   x  xx  x                                                     
+   x  xx  x                                                     
+   xxxxxxxx                                                     
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x  x                            
+                                x  x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 32, 96, 32, 32, 112 ] as 1 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                  x                             
+                                 xx                             
+                                  x                             
+                                  x                             
+                                 xxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 144, 144, 240, 16, 16 ] as 4 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                x  x                            
+                                x  x                            
+                                xxxx                            
+                                   x                            
+                                   x                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 224, 144, 144, 144, 224 ] as D to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxx                             
+                                x  x                            
+                                x  x                            
+                                x  x                            
+                                xxx                             
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 224, 144, 224, 144, 224 ] as B to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxx                             
+                                x  x                            
+                                xxx                             
+                                x  x                            
+                                xxx                             
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 16, 32, 64, 64 ] as 7 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                   x                            
+                                  x                             
+                                 x                              
+                                 x                              
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 16, 240, 16, 240 ] as 3 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                   x                            
+                                xxxx                            
+                                   x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 16, 240, 128, 240 ] as 2 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                   x                            
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 128, 128, 128, 240 ] as C to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x                               
+                                x                               
+                                x                               
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 128, 240, 16, 240 ] as 5 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                   x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 128, 240, 128, 128 ] as F to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                x                               
+                                x                               
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 128, 240, 128, 240 ] as E to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 128, 240, 144, 240 ] as 6 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x                               
+                                xxxx                            
+                                x  x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 144, 144, 144, 240 ] as 0 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x  x                            
+                                x  x                            
+                                x  x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 144, 240, 16, 240 ] as 9 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x  x                            
+                                xxxx                            
+                                   x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 144, 240, 144, 144 ] as A to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x  x                            
+                                xxxx                            
+                                x  x                            
+                                x  x                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble renders [ 240, 144, 240, 144, 240 ] as 8 to screen 1`] = `
+"                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                xxxx                            
+                                x  x                            
+                                xxxx                            
+                                x  x                            
+                                xxxx                            
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec print() asci prints the screen 1`] = `
+"x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x
+x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x"
+`;
+
+exports[`exec print() should handle leading zeros well 1`] = `
+"       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x
+       x       x       x       x       x       x       x       x"
+`;

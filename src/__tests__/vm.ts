@@ -12,9 +12,12 @@ import {
     SHR,
     SNE_Vx_kk, SNE_Vx_Vy,
     SUB, SUBN,
-    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS, SKP, SKNP, LD_Vx_K
+    XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS, SKP, SKNP, LD_Vx_K, DRW
 } from "../parse";
 import {CPU, CpuOptions} from "../vm";
+import {Bit8} from "../types";
+
+
 
 describe("exec", () => {
 
@@ -364,17 +367,83 @@ describe("exec", () => {
     })
 
     describe("DRW Vx, Vy, nibble", () => {
-        test.skip("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
-            // The interpreter reads n bytes from memory,
-            // starting at the address stored in I.
-            // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
-            // Sprites are XORed onto the existing screen.
-            // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
-            // If the sprite is positioned so part of it is outside the coordinates of the display,
-            // it wraps around to the opposite side of the screen.
-            // See instruction 8xy3 for more information on XOR, and section 2.4, Display,
-            // for more information on the Chip-8 screen and sprites.
-            throw new Error("TODO")
+        // The interpreter reads n bytes from memory,
+        // starting at the address stored in I.
+        // These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
+        // Sprites are XORed onto the existing screen.
+        // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
+        // If the sprite is positioned so part of it is outside the coordinates of the display,
+        // it wraps around to the opposite side of the screen.
+        // See instruction 8xy3 for more information on XOR, and section 2.4, Display,
+        // for more information on the Chip-8 screen and sprites.
+
+        test("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
+
+            cpu.registerI = 0x200
+
+            cpu.memory[0x200] = 0b11110000
+            cpu.memory[0x201] = 0b10010000
+            cpu.memory[0x202] = 0b10010000
+            cpu.memory[0x203] = 0b11110000
+
+            cpu.exec(new DRW(32, 14, 0x4))
+
+            expect(print(cpu)).toMatchSnapshot()
+        })
+
+        test.each([
+            [[0xF0, 0x90, 0x90, 0x90, 0xF0], "0"],
+            [[0x20, 0x60, 0x20, 0x20, 0x70], "1"],
+            [[0xF0, 0x10, 0xF0, 0x80, 0xF0], "2"],
+            [[0xF0, 0x10, 0xF0, 0x10, 0xF0], "3"],
+            [[0x90, 0x90, 0xF0, 0x10, 0x10], "4"],
+            [[0xF0, 0x80, 0xF0, 0x10, 0xF0], "5"],
+            [[0xF0, 0x80, 0xF0, 0x90, 0xF0], "6"],
+            [[0xF0, 0x10, 0x20, 0x40, 0x40], "7"],
+            [[0xF0, 0x90, 0xF0, 0x90, 0xF0], "8"],
+            [[0xF0, 0x90, 0xF0, 0x10, 0xF0], "9"],
+            [[0xF0, 0x90, 0xF0, 0x90, 0x90], "A"],
+            [[0xE0, 0x90, 0xE0, 0x90, 0xE0], "B"],
+            [[0xF0, 0x80, 0x80, 0x80, 0xF0], "C"],
+            [[0xE0, 0x90, 0x90, 0x90, 0xE0], "D"],
+            [[0xF0, 0x80, 0xF0, 0x80, 0xF0], "E"],
+            [[0xF0, 0x80, 0xF0, 0x80, 0x80], "F"]
+        ])("renders %s as %s to screen", (input: Bit8[]) => {
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
+            let addr = 0x200
+
+            cpu.registerI = addr
+            for (let [index, value] of input.entries()) {
+                cpu.memory[addr + index] = value
+            }
+
+            cpu.exec(new DRW(32, 6, 5))
+
+            expect(print(cpu)).toMatchSnapshot()
+        })
+
+        test("Adds padding to align bytes in memory when drawing pixels on x coordinate", () => {
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
+
+            cpu.registerI = 0x200
+
+            cpu.memory[0x200] = 0b11111111
+            cpu.memory[0x201] = 0b10011001
+            cpu.memory[0x202] = 0b10011001
+            cpu.memory[0x203] = 0b11111111
+
+            // x coordinate does not fall exactly on the byte boundary
+            cpu.exec(new DRW(3, 1, 0x4))
+
+            expect(print(cpu)).toMatchSnapshot()
+        })
+
+        test.skip("Handles pixel collision", () => {
+
+        })
+
+        test.skip("Handles wrapping", () => {
 
         })
     })
@@ -562,6 +631,26 @@ describe("exec", () => {
                 expect(cpu.rs[i]).toEqual(cpu.memory[0x002 + i] = 10 + i)
         })
     })
+
+    describe("print()", () => {
+        test("asci prints the screen", () => {
+           let cpu = aCPU({memory: new Uint8Array(0x200)})
+
+            for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++)
+                cpu.memory[i] = 0b10111101
+
+            expect(print(cpu)).toMatchSnapshot()
+        })
+
+        test("should handle leading zeros well", () => {
+            let cpu = aCPU({memory: new Uint8Array(0x200)})
+
+            for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++)
+                cpu.memory[i] = 0x1
+
+            expect(print(cpu)).toMatchSnapshot()
+        })
+    })
 })
 
 
@@ -571,6 +660,32 @@ function aCPU(opts: Partial<CpuOptions> = {}): CPU {
     let cpu = new CPU(options)
 
     return cpu;
+}
+
+function print(cpu: CPU): string {
+    let output = ""
+    let cursor = 0
+
+    for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++) {
+        if (cursor === 8) {
+            output += "\n"
+            cursor = 0
+        }
+        output += printByte(cpu.memory[i])
+        cursor ++
+    }
+
+    return output
+
+    function printByte(byte: Bit8): string {
+        let output = ""
+
+        for (let char of byte.toString(2).padStart(8, "0")) {
+            output +=  (char === "1") ? "x" : " "
+        }
+        return output
+    }
+
 }
 
 function pressKey(cpu: CPU, key: number) {

@@ -4,7 +4,7 @@ import {
     ADD_Vx_kk,
     ADD_Vx_Vy,
     AND,
-    CALL, CLS,
+    CALL, CLS, DRW,
     JP, JP0, LD_B_Vx, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I, LD_Vx_K,
     LD_Vx_kk,
     LD_Vx_Vy,
@@ -67,6 +67,7 @@ export class CPU {
     // @TODO pass from vm
     public static SCREEN_BASE_ADDRESS = 0x050
     public static SCREEN_WIDTH = 64
+    public static SCREEN_WIDTH_IN_BYTES = CPU.SCREEN_WIDTH / 8
     public static SCREEN_HEIGHT = 32
     public static SCREEN_SIZE = CPU.SCREEN_WIDTH * CPU.SCREEN_HEIGHT / 8
     public static KEY_PRESSED = 0x150
@@ -283,6 +284,40 @@ export class CPU {
                 for (let i = screenBegin; i < screenEnd; i++)
                     this.memory[i] = 0x00
 
+                break
+            }
+            case DRW: {
+                const BYTE_SIZE = 8
+                let i = instruction as DRW
+                let isAligned =  i.registerA % BYTE_SIZE === 0
+
+                // @TOOD mybe skip this alignt
+                if (isAligned) {
+
+                    let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.registerB) + Math.floor(i.registerA / BYTE_SIZE)
+                    for (let n = 0; n < i.nibble; n++) {
+                        this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n)] = this.memory[this.registerI + n]
+                    }
+                }
+
+                // If not aligned: write 2 bytes padded with zeros
+                // Ex:
+                //     |10011001|        | => with 3 bits padded on the left
+                //     |   10011|001     |
+
+                let paddingLeft = i.registerA % BYTE_SIZE
+                let paddingRight = BYTE_SIZE - paddingLeft
+
+                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.registerB) + Math.floor(i.registerA / BYTE_SIZE)
+                for (let n = 0; n < i.nibble; n++) {
+
+                    let toWrite = this.memory[this.registerI + n]
+                    let MSB =  toWrite >> paddingLeft
+                    let LSB = (toWrite << paddingRight) & 0xff
+
+                    this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n)] = MSB
+                    this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n) + 1] = LSB
+                }
                 break
             }
             case SKP: {
