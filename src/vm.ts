@@ -287,47 +287,60 @@ export class CPU {
                 break
             }
             case DRW: {
+                // @TODO clean up
                 const BYTE_SIZE = 8
-                let pixelsErased = false
                 let i = instruction as DRW
-                let isAligned =  i.registerA % BYTE_SIZE === 0
+                let pixelsErased = false
+                let isAligned = i.coordinateX % BYTE_SIZE === 0
 
                 // If not aligned: write 2 bytes padded with zeros
                 // Ex:
                 //     |10011001|        | => with 3 bits padded on the left
                 //     |   10011|001     |
 
-                let paddingLeft = i.registerA % BYTE_SIZE
+                let paddingLeft = i.coordinateX % BYTE_SIZE
                 let paddingRight = BYTE_SIZE - paddingLeft
 
-                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.registerB) + Math.floor(i.registerA / BYTE_SIZE)
+                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.coordinateY) + Math.floor(i.coordinateX / BYTE_SIZE)
                 for (let n = 0; n < i.nibble; n++) {
 
                     let toWrite = this.memory[this.registerI + n]
-                    let MSB =  toWrite >> paddingLeft
-                    let LSB = (toWrite << paddingRight) & 0xff
+                    let toWriteMSB = toWrite >> paddingLeft              // if aligned: MSB === toWrite
+                    let toWriteLSB = isAligned ? 0x00 : (toWrite << paddingRight) & 0xff
 
-                    // if aligned: MSB === toWrite
                     let addressMSB = offset + (CPU.SCREEN_WIDTH_IN_BYTES * n);
+
+                    // adjust for vertical wrapping
+                    let needsToWrap = i.coordinateY + n >= CPU.SCREEN_HEIGHT
+                    if (needsToWrap) {
+                        let nWrapped = (i.coordinateY + n) % CPU.SCREEN_HEIGHT
+                        addressMSB = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(i.coordinateX / BYTE_SIZE)
+                    }
+
                     {
                         let read = this.memory[addressMSB]
-                        let toWrite = read ^ MSB
+                        let toWrite = read ^ toWriteMSB
                         this.memory[addressMSB] = toWrite
 
                         // check if we erased a pixel
                         // since XOR is stricter than OR, if they are not the same,
                         // it means we erased at least one pixel
-                        pixelsErased = pixelsErased || (toWrite !== (read | MSB))
+                        pixelsErased = pixelsErased || (toWrite !== (read | toWriteMSB))
                     }
 
                     if (!isAligned) {
                         let addressLSB = addressMSB + 1;
+
+                        // correct for horizontal wrapping
+                        let needsToWrap = addressLSB % CPU.SCREEN_WIDTH_IN_BYTES === 0
+                        addressLSB = needsToWrap ? addressLSB - CPU.SCREEN_WIDTH_IN_BYTES : addressLSB
+
                         let read = this.memory[addressLSB];
-                        let toWrite = read ^ LSB
+                        let toWrite = read ^ toWriteLSB
                         this.memory[addressLSB] = toWrite
 
                         // check if we erased a pixel
-                        pixelsErased = pixelsErased || (toWrite !== (read | LSB))
+                        pixelsErased = pixelsErased || (toWrite !== (read | toWriteLSB))
                     }
                 }
 

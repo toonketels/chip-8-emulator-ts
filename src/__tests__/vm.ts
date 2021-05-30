@@ -460,8 +460,33 @@ describe("exec", () => {
 
         })
 
-        test.skip("Handles wrapping", () => {
+        test("Handles horizontal wrapping", () => {
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
 
+            cpu.registerI = 0x200
+
+            cpu.memory[0x200] = 0b10111101
+            cpu.memory[0x201] = 0b10111101
+            cpu.memory[0x202] = 0b10111101
+            cpu.memory[0x203] = 0b10111101
+
+            // @TODO check if sceen is correct with
+            cpu.exec(new DRW(CPU.SCREEN_WIDTH - 4, 2, 0x4))
+            expect(print(cpu)).toMatchSnapshot()
+        })
+
+        test("Handles vertical wrapping", () => {
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
+
+            cpu.registerI = 0x200
+
+            cpu.memory[0x200] = 0b11011111
+            cpu.memory[0x201] = 0b11101111
+            cpu.memory[0x202] = 0b11110111
+            cpu.memory[0x203] = 0b11111011
+
+            cpu.exec(new DRW(4, CPU.SCREEN_HEIGHT - 2, 0x4))
+            expect(print(cpu)).toMatchSnapshot()
         })
     })
 
