@@ -704,7 +704,7 @@ function aCPU(opts: Partial<CpuOptions> = {}): CPU {
     return cpu;
 }
 
-function print(cpu: CPU): string {
+export function print(cpu: CPU): string {
     let output = ""
     let cursor = 0
 

@@ -16,6 +16,7 @@ import {
     SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
     XOR
 } from "./parse";
+import * as fs from "fs";
 
 // @TODO no need to pass a stack, should be init in cpu
 export interface CpuOptions {
@@ -72,7 +73,6 @@ export class CPU {
     public static SCREEN_SIZE = CPU.SCREEN_WIDTH * CPU.SCREEN_HEIGHT / 8
     public static KEY_PRESSED = 0x150
     public static KEY_VALUE = 0x151
-
     constructor({memory, stack, programStart}: CpuOptions) {
         this.memory = memory
         this.stack = stack
@@ -80,7 +80,32 @@ export class CPU {
     }
 
     initialize() {
-        // @TODO
+        // load char set
+
+        let chars  = [
+            [0xF0, 0x90, 0x90, 0x90, 0xF0], //"0",
+            [0x20, 0x60, 0x20, 0x20, 0x70], // "1"
+            [0xF0, 0x10, 0xF0, 0x80, 0xF0], // "2"
+            [0xF0, 0x10, 0xF0, 0x10, 0xF0], // "3"
+            [0x90, 0x90, 0xF0, 0x10, 0x10], // "4"
+            [0xF0, 0x80, 0xF0, 0x10, 0xF0], // "5"
+            [0xF0, 0x80, 0xF0, 0x90, 0xF0], // "6"
+            [0xF0, 0x10, 0x20, 0x40, 0x40], // "7"
+            [0xF0, 0x90, 0xF0, 0x90, 0xF0], // "8"
+            [0xF0, 0x90, 0xF0, 0x10, 0xF0], // "9"
+            [0xF0, 0x90, 0xF0, 0x90, 0x90], // "A"
+            [0xE0, 0x90, 0xE0, 0x90, 0xE0], // "B"
+            [0xF0, 0x80, 0x80, 0x80, 0xF0], // "C"
+            [0xE0, 0x90, 0x90, 0x90, 0xE0], // "D"
+            [0xF0, 0x80, 0xF0, 0x80, 0xF0], // "E"
+            [0xF0, 0x80, 0xF0, 0x80, 0x80] //  "F
+        ];
+        let address = CPU.SPRITE_BASE_ADDRESS
+        for (let char of chars) {
+            for (let byte of char) {
+                this.memory[address++] = byte
+            }
+        }
     }
 
     tick() {
@@ -90,9 +115,14 @@ export class CPU {
         // decode
         // execute
         // update timers
+        let opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1]
+        this.pc = this.pc + 2
 
-        let instruction = parse(this.memory[this.pc])
+        let instruction = parse(opcode)
+
         this.exec(instruction)
+
+        this.updateTimers()
 
 
 
@@ -364,6 +394,18 @@ export class CPU {
                 throw new Error(`CPU exec error: not implemented ${instruction.constructor.name}`)
         }
     }
+
+    private updateTimers() {
+        // @TODO real implementation timers
+        if (this.registerST > 0) {
+            this.registerST--
+        }
+
+        if (this.registerDT > 0) {
+            this.registerDT--
+        }
+
+    }
 }
 
 interface StartOps {
@@ -374,6 +416,7 @@ export class VM {
     private static size_4K: number = 4096
     private static size_stack: number = 16
     private shouldStop = false
+    private romPath: string
 
     // An array of 16 16-bit values
     // used to store the address that the interpreter shoud return to when finished with a subroutine.
@@ -395,6 +438,10 @@ export class VM {
     public memory = new Uint8Array(VM.size_4K)
     public cpu = new CPU({memory: this.memory, stack: this.stack, programStart: 0x200})
 
+    constructor(ops: {rom: string}) {
+        this.romPath = ops.rom
+    }
+
     // @TODO input
     // @TODO output
 
@@ -406,7 +453,7 @@ export class VM {
     //  - start executing instructions forever
     //  - till we get interrupt signal
     //  - should we run in a separate thread so we can easily stop it?
-    public async start({cycles}: StartOps) {
+    public start({cycles}: StartOps) {
 
         this.loadRom()
         this.cpu.initialize()
@@ -418,7 +465,6 @@ export class VM {
 
             cycles--
         }
-
     }
 
     // Shut down the system
@@ -435,7 +481,14 @@ export class VM {
     }
 
     private loadRom() {
-        // @TODO
+
+        // @TODO load directly into memory
+        let fd = fs.openSync(this.romPath, 'r')
+        let result = fs.readFileSync(fd)
+
+        for (let i = 0; i < result.length; i++) {
+            this.memory[0x200 + i] = result[i]
+        }
     }
 }
 
