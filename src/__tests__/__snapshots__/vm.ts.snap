@@ -70,6 +70,76 @@ exports[`exec DRW Vx, Vy, nibble Display n-byte sprite starting at memory locati
                                                                 "
 `;
 
+exports[`exec DRW Vx, Vy, nibble Handles pixel collision 1`] = `
+"                                                                
+     xxxxxxxx                                                   
+     xxxxxxxx                                                   
+     xxxxxxxx                                                   
+     xxxxxxxx                                                   
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
+exports[`exec DRW Vx, Vy, nibble Handles pixel collision 2`] = `
+"                                                                
+     xxxxxxxx                                                   
+     xxxxxxxx                                                   
+     xxxxx   xxxxx                                              
+     xxxxx   xxxxx                                              
+          xxxxxxxx                                              
+          xxxxxxxx                                              
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
 exports[`exec DRW Vx, Vy, nibble renders [ 32, 96, 32, 32, 112 ] as 1 to screen 1`] = `
 "                                                                
                                                                 

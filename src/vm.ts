@@ -288,17 +288,9 @@ export class CPU {
             }
             case DRW: {
                 const BYTE_SIZE = 8
+                let pixelsErased = false
                 let i = instruction as DRW
                 let isAligned =  i.registerA % BYTE_SIZE === 0
-
-                // @TOOD mybe skip this alignt
-                if (isAligned) {
-
-                    let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.registerB) + Math.floor(i.registerA / BYTE_SIZE)
-                    for (let n = 0; n < i.nibble; n++) {
-                        this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n)] = this.memory[this.registerI + n]
-                    }
-                }
 
                 // If not aligned: write 2 bytes padded with zeros
                 // Ex:
@@ -315,9 +307,32 @@ export class CPU {
                     let MSB =  toWrite >> paddingLeft
                     let LSB = (toWrite << paddingRight) & 0xff
 
-                    this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n)] = MSB
-                    this.memory[offset + (CPU.SCREEN_WIDTH_IN_BYTES * n) + 1] = LSB
+                    // if aligned: MSB === toWrite
+                    let addressMSB = offset + (CPU.SCREEN_WIDTH_IN_BYTES * n);
+                    {
+                        let read = this.memory[addressMSB]
+                        let toWrite = read ^ MSB
+                        this.memory[addressMSB] = toWrite
+
+                        // check if we erased a pixel
+                        // since XOR is stricter than OR, if they are not the same,
+                        // it means we erased at least one pixel
+                        pixelsErased = pixelsErased || (toWrite !== (read | MSB))
+                    }
+
+                    if (!isAligned) {
+                        let addressLSB = addressMSB + 1;
+                        let read = this.memory[addressLSB];
+                        let toWrite = read ^ LSB
+                        this.memory[addressLSB] = toWrite
+
+                        // check if we erased a pixel
+                        pixelsErased = pixelsErased || (toWrite !== (read | LSB))
+                    }
                 }
+
+                this.rs[0xf] = pixelsErased ? 0x01 : 0x00
+
                 break
             }
             case SKP: {

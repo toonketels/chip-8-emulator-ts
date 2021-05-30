@@ -439,7 +439,24 @@ describe("exec", () => {
             expect(print(cpu)).toMatchSnapshot()
         })
 
-        test.skip("Handles pixel collision", () => {
+        test("Handles pixel collision", () => {
+
+            let cpu = aCPU({memory: new Uint8Array(0x300)})
+
+            cpu.registerI = 0x200
+
+            cpu.memory[0x200] = 0xff
+            cpu.memory[0x201] = 0xff
+            cpu.memory[0x202] = 0xff
+            cpu.memory[0x203] = 0xff
+
+            cpu.exec(new DRW(5, 1, 0x4))
+            expect(cpu.rs[0xf]).toEqual(0x00)
+            expect(print(cpu)).toMatchSnapshot()
+
+            cpu.exec(new DRW(10, 3, 0x4))
+            expect(cpu.rs[0xf]).toEqual(0x01)
+            expect(print(cpu)).toMatchSnapshot()
 
         })
 
