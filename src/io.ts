@@ -103,14 +103,16 @@ export class TerminalIO implements IO {
 
         const BYTE = 8;
         let x = (address - CPU.SCREEN_BASE_ADDRESS) % CPU.SCREEN_WIDTH_IN_BYTES
-        let y = (address - CPU.SCREEN_BASE_ADDRESS) / CPU.SCREEN_WIDTH_IN_BYTES
+        let y = Math.floor((address - CPU.SCREEN_BASE_ADDRESS) / CPU.SCREEN_WIDTH_IN_BYTES)
 
         for (let shift = 0; shift < BYTE; shift++) {
             let bit = (byte & (0b1 << shift)) >> shift
             let color = bit ? this.fg : this.bg
             // @TODO better naming
-            let xx = x + (BYTE - shift)
-            this.screen.fillRegion(color, '█', xx * 2, (xx + 1) * 2, y, y + 1)
+            let xx = (x * BYTE) + (BYTE - shift)
+            let coorX = xx * 2
+            let coorY = y
+            this.screen.fillRegion(color, '█', coorX, coorX + 2, coorY, coorY + 1)
         }
     }
 

@@ -520,7 +520,7 @@ export class VM {
 
 
 
-        }, 30);
+        }, 15);
     }
 
     // Shut down the system
