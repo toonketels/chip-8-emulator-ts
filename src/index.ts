@@ -23,15 +23,15 @@ export function main() {
 
     // game
     // issue: too fast
-    // let rom = path.resolve('roms/CONNECT4');
+    let rom = path.resolve('roms/CONNECT4');
 
     // game
     // issue: rendering + doesnt wait for keypress to continue
     // let rom = path.resolve('roms/GUESS');
 
     // game
-    // issue: doesnt wait + clear screen not implemented?
-    let rom = path.resolve('roms/HIDDEN');
+    // issue: doesnt wait
+    // let rom = path.resolve('roms/HIDDEN');
 
     const vm = new VM({rom, io: (cpu: CPU) => new TerminalIO(cpu)})
 

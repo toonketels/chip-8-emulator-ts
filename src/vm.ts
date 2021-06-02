@@ -340,6 +340,9 @@ export class CPU {
                 for (let i = screenBegin; i < screenEnd; i++)
                     this.memory[i] = 0x00
 
+                // @TODO better interface
+                this.emitter.emit("screenCleared")
+
                 break
             }
             case DRW: {

@@ -34,6 +34,8 @@ export class TerminalIO implements IO {
         this.cpu.emitter.on("screenUpdated", function (addr: Bit12, byte: Bit8) { // @ts-ignore
             this.updateScreen(this.cpu.memory, addr, byte)
         }.bind(this))
+
+        this.cpu.emitter.on("screenCleared", this.clearScreen.bind(this))
     }
 
     private initKeyboard(): void {
@@ -114,6 +116,11 @@ export class TerminalIO implements IO {
             let coorY = y
             this.screen.fillRegion(color, '█', coorX, coorX + 2, coorY, coorY + 1)
         }
+    }
+
+    clearScreen(): void {
+        // this.screen.clearRegion(0, CPU.SCREEN_WIDTH * 2, 0, CPU.SCREEN_HEIGHT)
+        this.screen.fillRegion(this.bg, '█', 0, CPU.SCREEN_WIDTH * 2, 0, CPU.SCREEN_HEIGHT)
     }
 
     keypress(key: number) {
