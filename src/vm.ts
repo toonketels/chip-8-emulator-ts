@@ -347,17 +347,22 @@ export class CPU {
                 const BYTE_SIZE = 8
                 let i = instruction as DRW
                 let pixelsErased = false
-                let isAligned = i.coordinateX % BYTE_SIZE === 0
+                let coordinateX = this.rs[i.registerA]
+                let coordinateY = this.rs[i.registerB]
+
+                if (coordinateX === undefined || coordinateY === undefined) throw new Error(`CPU exec draw no coordinate ${coordinateX} ${coordinateY}`)
+
+                let isAligned = coordinateX % BYTE_SIZE === 0
 
                 // If not aligned: write 2 bytes padded with zeros
                 // Ex:
                 //     |10011001|        | => with 3 bits padded on the left
                 //     |   10011|001     |
 
-                let paddingLeft = i.coordinateX % BYTE_SIZE
+                let paddingLeft = coordinateX % BYTE_SIZE
                 let paddingRight = BYTE_SIZE - paddingLeft
 
-                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * i.coordinateY) + Math.floor(i.coordinateX / BYTE_SIZE)
+                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * coordinateY) + Math.floor(coordinateX / BYTE_SIZE)
                 for (let n = 0; n < i.nibble; n++) {
 
                     let toWrite = this.memory[this.registerI + n]
@@ -367,10 +372,10 @@ export class CPU {
                     let addressMSB = offset + (CPU.SCREEN_WIDTH_IN_BYTES * n);
 
                     // adjust for vertical wrapping
-                    let needsToWrap = i.coordinateY + n >= CPU.SCREEN_HEIGHT
+                    let needsToWrap = coordinateY + n >= CPU.SCREEN_HEIGHT
                     if (needsToWrap) {
-                        let nWrapped = (i.coordinateY + n) % CPU.SCREEN_HEIGHT
-                        addressMSB = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(i.coordinateX / BYTE_SIZE)
+                        let nWrapped = (coordinateY + n) % CPU.SCREEN_HEIGHT
+                        addressMSB = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(coordinateX / BYTE_SIZE)
                     }
 
                     {
@@ -515,7 +520,7 @@ export class VM {
 
 
 
-        }, 150);
+        }, 30);
     }
 
     // Shut down the system

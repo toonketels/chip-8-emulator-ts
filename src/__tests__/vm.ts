@@ -379,6 +379,8 @@ describe("exec", () => {
 
         test("Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
+            cpu.rs[0x0] = 32
+            cpu.rs[0x1] = 14
 
             cpu.registerI = 0x200
 
@@ -387,7 +389,7 @@ describe("exec", () => {
             cpu.memory[0x202] = 0b10010000
             cpu.memory[0x203] = 0b11110000
 
-            cpu.exec(new DRW(32, 14, 0x4))
+            cpu.exec(new DRW(0x0, 0x1, 0x4))
 
             expect(print(cpu)).toMatchSnapshot()
         })
@@ -411,6 +413,8 @@ describe("exec", () => {
             [[0xF0, 0x80, 0xF0, 0x80, 0x80], "F"]
         ])("renders %s as %s to screen", (input: Bit8[]) => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
+            cpu.rs[0x0] = 32
+            cpu.rs[0x1] = 6
             let addr = 0x200
 
             cpu.registerI = addr
@@ -418,13 +422,15 @@ describe("exec", () => {
                 cpu.memory[addr + index] = value
             }
 
-            cpu.exec(new DRW(32, 6, 5))
+            cpu.exec(new DRW(0x0, 0x1, 5))
 
             expect(print(cpu)).toMatchSnapshot()
         })
 
         test("Adds padding to align bytes in memory when drawing pixels on x coordinate", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
+            cpu.rs[0x0] = 3
+            cpu.rs[0x1] = 1
 
             cpu.registerI = 0x200
 
@@ -434,7 +440,7 @@ describe("exec", () => {
             cpu.memory[0x203] = 0b11111111
 
             // x coordinate does not fall exactly on the byte boundary
-            cpu.exec(new DRW(3, 1, 0x4))
+            cpu.exec(new DRW(0x0, 0x1, 0x4))
 
             expect(print(cpu)).toMatchSnapshot()
         })
@@ -443,6 +449,11 @@ describe("exec", () => {
 
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
+            cpu.rs[0x0] = 5
+            cpu.rs[0x1] = 1
+            cpu.rs[0x2] = 10
+            cpu.rs[0x3] = 3
+
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0xff
@@ -450,11 +461,11 @@ describe("exec", () => {
             cpu.memory[0x202] = 0xff
             cpu.memory[0x203] = 0xff
 
-            cpu.exec(new DRW(5, 1, 0x4))
+            cpu.exec(new DRW(0x0, 0x1, 0x4))
             expect(cpu.rs[0xf]).toEqual(0x00)
             expect(print(cpu)).toMatchSnapshot()
 
-            cpu.exec(new DRW(10, 3, 0x4))
+            cpu.exec(new DRW(0x2, 0x3, 0x4))
             expect(cpu.rs[0xf]).toEqual(0x01)
             expect(print(cpu)).toMatchSnapshot()
 
@@ -463,6 +474,9 @@ describe("exec", () => {
         test("Handles horizontal wrapping", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
+            cpu.rs[0x0] = CPU.SCREEN_WIDTH - 4
+            cpu.rs[0x1] = 2
+
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0b10111101
@@ -470,14 +484,16 @@ describe("exec", () => {
             cpu.memory[0x202] = 0b10111101
             cpu.memory[0x203] = 0b10111101
 
-            // @TODO check if sceen is correct with
-            cpu.exec(new DRW(CPU.SCREEN_WIDTH - 4, 2, 0x4))
+            // @TODO check if srceen is correct with
+            cpu.exec(new DRW(0x0, 0x1, 0x4))
             expect(print(cpu)).toMatchSnapshot()
         })
 
         test("Handles vertical wrapping", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
+            cpu.rs[0x0] = 4
+            cpu.rs[0x1] = CPU.SCREEN_HEIGHT - 2
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0b11011111
@@ -485,7 +501,7 @@ describe("exec", () => {
             cpu.memory[0x202] = 0b11110111
             cpu.memory[0x203] = 0b11111011
 
-            cpu.exec(new DRW(4, CPU.SCREEN_HEIGHT - 2, 0x4))
+            cpu.exec(new DRW(0x0, 0x1, 0x4))
             expect(print(cpu)).toMatchSnapshot()
         })
     })

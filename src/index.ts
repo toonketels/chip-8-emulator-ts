@@ -7,9 +7,10 @@ main()
 
 export function main() {
 
-    let rom = path.resolve('roms/person.ch8');
+    let rom = path.resolve('roms/IBM');
+    // let r`om = path.resolve('roms/chip8-test-rom.ch8');
     const vm = new VM({rom, io: (cpu: CPU) => new TerminalIO(cpu)})
 
-    vm.start({cycles: 20000})
+    vm.start({cycles: 2000000})
 
 }
