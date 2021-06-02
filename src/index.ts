@@ -1,11 +1,15 @@
-import {VM} from "./vm";
+import {CPU, VM} from "./vm";
+import path from "path";
+import {TerminalIO} from "./io";
 
 
-export function create() {
+main()
 
-    const vm = new VM()
+export function main() {
 
-    vm.start()
-    setTimeout(() => { vm.stop()}, 2000)
+    let rom = path.resolve('roms/person.ch8');
+    const vm = new VM({rom, io: (cpu: CPU) => new TerminalIO(cpu)})
+
+    vm.start({cycles: 20000})
 
 }

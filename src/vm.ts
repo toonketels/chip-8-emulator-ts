@@ -4,19 +4,42 @@ import {
     ADD_Vx_kk,
     ADD_Vx_Vy,
     AND,
-    CALL, CLS, DRW,
-    JP, JP0, LD_B_Vx, LD_DT_Vx, LD_F_Vx, LD_I_nnn, LD_I_Vx, LD_ST_Vx, LD_Vx_DT, LD_Vx_I, LD_Vx_K,
+    CALL,
+    CLS,
+    DRW,
+    JP,
+    JP0,
+    LD_B_Vx,
+    LD_DT_Vx,
+    LD_F_Vx,
+    LD_I_nnn,
+    LD_I_Vx,
+    LD_ST_Vx,
+    LD_Vx_DT,
+    LD_Vx_I,
+    LD_Vx_K,
     LD_Vx_kk,
     LD_Vx_Vy,
     Opcode,
     OR,
-    parse, RET, RND,
+    parse,
+    RET,
+    RND,
     SE_Vx_kk,
-    SE_Vx_Vy, SHL, SHR, SKNP, SKP,
-    SNE_Vx_kk, SNE_Vx_Vy, SUB, SUBN,
+    SE_Vx_Vy,
+    SHL,
+    SHR,
+    SKNP,
+    SKP,
+    SNE_Vx_kk,
+    SNE_Vx_Vy,
+    SUB,
+    SUBN,
     XOR
 } from "./parse";
 import * as fs from "fs";
+import EventEmitter from "events";
+import {IO} from "./io";
 
 // @TODO no need to pass a stack, should be init in cpu
 export interface CpuOptions {
@@ -26,6 +49,9 @@ export interface CpuOptions {
 }
 
 export class CPU {
+
+    // @TODO remove
+    public emitter = new EventEmitter()
 
     // 16 general purpose 8-bit rs,
     // usually referred to as Vx, where x is a hexadecimal digit (0 through F).
@@ -352,6 +378,9 @@ export class CPU {
                         let toWrite = read ^ toWriteMSB
                         this.memory[addressMSB] = toWrite
 
+
+                        this.emitter.emit("screenUpdated", addressMSB, toWrite)
+
                         // check if we erased a pixel
                         // since XOR is stricter than OR, if they are not the same,
                         // it means we erased at least one pixel
@@ -368,6 +397,9 @@ export class CPU {
                         let read = this.memory[addressLSB];
                         let toWrite = read ^ toWriteLSB
                         this.memory[addressLSB] = toWrite
+
+                        this.emitter.emit("screenUpdated", addressLSB, toWrite)
+
 
                         // check if we erased a pixel
                         pixelsErased = pixelsErased || (toWrite !== (read | toWriteLSB))
@@ -409,7 +441,8 @@ export class CPU {
 }
 
 interface StartOps {
-    cycles: number
+    cycles: number,
+    cyclesPerFrame?: number,
 }
 
 export class VM {
@@ -417,6 +450,8 @@ export class VM {
     private static size_stack: number = 16
     private shouldStop = false
     private romPath: string
+
+    private io: IO
 
     // An array of 16 16-bit values
     // used to store the address that the interpreter shoud return to when finished with a subroutine.
@@ -438,8 +473,9 @@ export class VM {
     public memory = new Uint8Array(VM.size_4K)
     public cpu = new CPU({memory: this.memory, stack: this.stack, programStart: 0x200})
 
-    constructor(ops: {rom: string}) {
+    constructor(ops: {rom: string, io: (cpu: CPU) => IO}) {
         this.romPath = ops.rom
+        this.io = ops.io(this.cpu)
     }
 
     // @TODO input
@@ -453,18 +489,33 @@ export class VM {
     //  - start executing instructions forever
     //  - till we get interrupt signal
     //  - should we run in a separate thread so we can easily stop it?
-    public start({cycles}: StartOps) {
+    public start({cycles, cyclesPerFrame = 10}: StartOps) {
 
         this.loadRom()
         this.cpu.initialize()
 
-        while (!(this.shouldStop || cycles < 0)) {
-            this.cpu.tick()
-            this.updateScreen()
-            this.checkInput()
+        // @TODO 30 / 60 fps
+        let cancel = setInterval(() => {
 
-            cycles--
-        }
+            if (!this.shouldStop) {
+
+                for (let i = 0; i < cyclesPerFrame; i++) {
+                    this.cpu.tick()
+                }
+
+                // only render screen every 20 ticks
+                this.updateScreen()
+                this.checkInput()
+            }
+
+            if (this.shouldStop) {
+                console.log("clearing interval")
+                clearInterval(cancel)
+            }
+
+
+
+        }, 150);
     }
 
     // Shut down the system
@@ -473,7 +524,7 @@ export class VM {
     }
 
     private updateScreen() {
-        // @TODO
+        this.io.renderScreen()
     }
 
     private checkInput() {
@@ -491,4 +542,5 @@ export class VM {
         }
     }
 }
+
 

@@ -2,6 +2,8 @@ import {CPU, CpuOptions, VM} from "../vm";
 import {CALL, JP, SE_Vx_kk} from "../parse";
 import path from "path";
 import {print} from "./vm"
+import {Bit12, Bit8} from "../types";
+import {IO} from "../io";
 
 
 
@@ -10,17 +12,16 @@ describe("Chip 8", () => {
     test("test_opcode", () => {
         let rom = path.resolve('roms/TEST_OPCODE');
 
-        const vm = new VM({rom})
+        const vm = new VM({rom, io: () => new NoOpIO()})
 
-        vm.start({cycles: 1000000})
+        vm.start({cycles: 10000})
 
         expect(print(vm.cpu)).toMatchSnapshot()
-
-        vm.stop()
-        console.log("stop")
     })
 
-    test.each([
+    // @TODO reneable once we know which ones are deterministic
+    test.skip.each([
+        ["roms/TEST_OPCODE"],
         ["roms/15PUZZLE"],
         ["roms/BLINKY"],
         ["roms/BLITZ"],
@@ -46,14 +47,20 @@ describe("Chip 8", () => {
         ["roms/VERS"],
         ["roms/WIPEOFF"]
     ])("executes the RON %s", (rom: string) => {
-        const vm = new VM({rom})
+        const vm = new VM({rom, io: () => new NoOpIO()})
 
-        vm.start({cycles: 10000000})
+        vm.start({cycles: 1000})
 
         expect(print(vm.cpu)).toMatchSnapshot()
-
-        // vm.stop()
     })
 })
 
+class NoOpIO implements IO {
+    renderScreen(): void {
+    }
+
+    updateScreen(screenBuffer: Uint8Array, address: Bit12, byte: Bit8): void {
+    }
+
+}
 
