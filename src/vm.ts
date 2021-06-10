@@ -458,6 +458,7 @@ export class VM {
     private static size_stack: number = 16
     private shouldStop = false
     private romPath: string
+    private cycles = 0
 
     private io: IO
 
@@ -497,33 +498,34 @@ export class VM {
     //  - start executing instructions forever
     //  - till we get interrupt signal
     //  - should we run in a separate thread so we can easily stop it?
-    public start({cycles, cyclesPerFrame = 10}: StartOps) {
+     public async start({cycles, cyclesPerFrame = 10}: StartOps): Promise<void> {
 
-        this.loadRom()
-        this.cpu.initialize()
+        return new Promise(function(this: VM, resolve: () => void) {
+            this.loadRom()
+            this.cpu.initialize()
 
-        // @TODO 30 / 60 fps
-        let cancel = setInterval(() => {
+            // @TODO 30 / 60 fps
+            let cancel = setInterval(function(this: VM) {
 
-            if (!this.shouldStop) {
+                if (!(this.shouldStop || this.cycles > cycles)) {
 
-                for (let i = 0; i < cyclesPerFrame; i++) {
-                    this.cpu.tick()
+                    for (let i = 0; i < cyclesPerFrame; i++) {
+                        this.cpu.tick()
+                        this.cycles++
+                    }
+
+                    // only render screen every 15 ms ticks
+                    this.updateScreen()
+                    this.checkInput()
+                } else {
+                    clearInterval(cancel)
+                    resolve()
                 }
 
-                // only render screen every 20 ticks
-                this.updateScreen()
-                this.checkInput()
-            }
-
-            if (this.shouldStop) {
-                console.log("clearing interval")
-                clearInterval(cancel)
-            }
 
 
-
-        }, 15);
+            }.bind(this), 15);
+        }.bind(this))
     }
 
     // Shut down the system

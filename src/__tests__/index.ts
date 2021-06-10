@@ -1,5 +1,4 @@
 import {CPU, CpuOptions, VM} from "../vm";
-import {CALL, JP, SE_Vx_kk} from "../parse";
 import path from "path";
 import {print} from "./vm"
 import {Bit12, Bit8} from "../types";
@@ -9,13 +8,13 @@ import {IO} from "../io";
 
 describe("Chip 8", () => {
 
-    test("test_opcode", () => {
+    test("test_opcode", async () => {
         let rom = path.resolve('roms/TEST_OPCODE');
 
         const vm = new VM({rom, io: () => new NoOpIO()})
 
-        vm.start({cycles: 10000})
-
+        await vm.start({cycles: 200, cyclesPerFrame: 30})
+        vm.stop()
         expect(print(vm.cpu)).toMatchSnapshot()
     })
 

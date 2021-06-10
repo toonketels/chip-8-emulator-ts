@@ -210,41 +210,6 @@ exports[`exec DRW Vx, Vy, nibble Handles vertical wrapping 1`] = `
     xxx xxxx                                                    "
 `;
 
-exports[`exec DRW Vx, Vy, nibble TerminalIO n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision 1`] = `
-"                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                xxxx                            
-                                x  x                            
-                                x  x                            
-                                xxxx                            
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                
-                                                                "
-`;
-
 exports[`exec DRW Vx, Vy, nibble renders [ 32, 96, 32, 32, 112 ] as 1 to screen 1`] = `
 "                                                                
                                                                 

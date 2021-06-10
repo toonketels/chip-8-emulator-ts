@@ -1,8 +1,8 @@
 /node_modules
-/coverage
-/lib
+/dist
 /INFO.md
 /NOTES.md
+/reports
 
 # User-specific stuff
 .idea/**/workspace.xml
