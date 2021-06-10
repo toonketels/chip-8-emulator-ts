@@ -572,28 +572,34 @@ describe("exec", () => {
         test("Wait for a key press, store the value of the key in Vx", () => {
             // All execution stops until a key is pressed, then the value of that key is stored in Vx.
 
-            // Waiting means do nothing as in the next cycle the same command will be loaded and we reevaluate
-            // Keyboard can put the keypress before each cycle
-            // @TODO validate is this is workable
+            // Waiting means resetting the program counter to previous statement so on next
+            // tick our command can be executed again.
+            // On keypress, we exit it loop by not resetting the program counter.
 
             let cpu = aCPU({memory: new Uint8Array(0x200)})
             cpu.pc = 0x200
 
             releaseKey(cpu);
+            tick(cpu)
 
-            cpu.exec(new LD_Vx_K(0x1))
             expect(cpu.pc).toEqual(0x200)
             expect(cpu.rs[0x1]).toEqual(0x00)
 
-            cpu.exec(new LD_Vx_K(0x1))
+            tick(cpu)
+
             expect(cpu.pc).toEqual(0x200)
             expect(cpu.rs[0x1]).toEqual(0x00)
 
             pressKey(cpu, 0xf)
+            tick(cpu)
 
-            cpu.exec(new LD_Vx_K(0x1))
             expect(cpu.pc).toEqual(0x202)
             expect(cpu.rs[0x1]).toEqual(0xf)
+
+            function tick(cpu: CPU) {
+                cpu.pc = cpu.pc + 2
+                cpu.exec(new LD_Vx_K(0x1))
+            }
         })
     })
 

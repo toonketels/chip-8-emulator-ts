@@ -320,14 +320,17 @@ export class CPU {
                 break
             }
             case LD_Vx_K: {
-                // @TODO should we increment pc by 2 after each cycle? if so, we need to decr by 2 to exec same inst again
+                // To wait for a keypress we keep reevaluating this instruction until a key is pressed.
+                // Resetting the program counter to the previous instruction forces reevaluation of this instruction
+                // in the next cycle.
                 let i = instruction as LD_Vx_K
                 let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff
-                if (!isKeyPressed)
+                if (!isKeyPressed) {
+                    this.pc = this.pc - 2
                     break
+                }
                 this.rs[i.register] = this.memory[CPU.KEY_VALUE]
-                this.pc = this.pc + 2
-
+                // No need to increment the program counter with 2 as this is done automatically in each tick
                 break
             }
             case CLS: {

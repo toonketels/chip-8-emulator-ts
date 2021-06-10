@@ -17,6 +17,7 @@ export class TerminalIO implements IO {
     // @ts-ignore
     private fg = blessed.helpers.attrToBinary({fg: 'red'})
     private cpu: CPU
+    private keypressed: NodeJS.Timeout | undefined;
 
     constructor(cpu: CPU) {
         this.cpu = cpu
@@ -126,6 +127,9 @@ export class TerminalIO implements IO {
     keypress(key: number) {
         this.cpu.memory[CPU.KEY_VALUE] = key
         this.cpu.memory[CPU.KEY_PRESSED] = 0xff
+
+        if (this.keypressed !== undefined) clearTimeout(this.keypressed)
+        this.keypressed = setTimeout(() => this.cpu.memory[CPU.KEY_PRESSED] = 0x00, 100)
     }
 
 

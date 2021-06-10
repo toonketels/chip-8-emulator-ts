@@ -3,7 +3,7 @@ import {IO} from "./io";
 import {CPU} from "./cpu";
 
 interface StartOps {
-    cycles: number,
+    cycles?: number,
     cyclesPerFrame?: number,
 }
 
@@ -52,7 +52,7 @@ export class VM {
     //  - start executing instructions forever
     //  - till we get interrupt signal
     //  - should we run in a separate thread so we can easily stop it?
-     public async start({cycles, cyclesPerFrame = 10}: StartOps): Promise<void> {
+     public async start({cycles = Number.POSITIVE_INFINITY, cyclesPerFrame = 10}: StartOps = {}): Promise<void> {
 
         return new Promise(function(this: VM, resolve: () => void) {
             this.loadRom()
