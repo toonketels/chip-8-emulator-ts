@@ -5,7 +5,7 @@ import {
     DRW,
     JP, JP0, LD_Vx_kk, LD_Vx_DT, LD_I_nnn, LD_Vx_K, LD_Vx_Vy,
     Opcode, OR,
-    parse,
+    decode,
     RET, RND,
     SE_Vx_kk,
     SE_Vx_Vy, SHL, SHR, SKNP, SKP,
@@ -14,10 +14,10 @@ import {
     split4Bit4,
     findValue,
     findAddress, SUB, SUBN, XOR, LD_DT_Vx, LD_ST_Vx, ADD_I_Vx, LD_F_Vx, LD_B_Vx, LD_I_Vx, LD_Vx_I
-} from "../parse";
+} from "../decode";
 import {Bit12, Bit16, Bit4, Bit8} from "../types";
 
-describe("parse()", () => {
+describe("decode()", () => {
 
     test.each([
         [0x00E0, new CLS()],
@@ -88,8 +88,8 @@ describe("parse()", () => {
         [0xfe65, new LD_Vx_I(0xe)],
     ])("binary %s is opcode %s", (binary: Bit16, opcode: Opcode) => {
 
-        expect(parse(binary)).toBeInstanceOf(opcode.constructor)
-        expect(parse(binary)).toMatchObject(opcode)
+        expect(decode(binary)).toBeInstanceOf(opcode.constructor)
+        expect(decode(binary)).toMatchObject(opcode)
     })
 
     test.each([
@@ -102,8 +102,7 @@ describe("parse()", () => {
         [0xF108],
     ])("will throw for unkown upcode %s", (binary: Bit16) => {
         expect(() => {
-            let r = parse(binary)
-            console.log(r)
+            let r = decode(binary)
         }
     ).toThrowError(`Parse error: unknown opcode ${binary.toString(16)}`)
     })

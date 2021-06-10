@@ -24,7 +24,7 @@ import {
     LD_Vx_Vy,
     Opcode,
     OR,
-    parse,
+    decode,
     RET,
     RND,
     SE_Vx_kk,
@@ -38,7 +38,7 @@ import {
     SUB,
     SUBN,
     XOR
-} from "./parse";
+} from "./decode";
 
 export interface CpuOptions {
     memory: Uint8Array,
@@ -134,22 +134,12 @@ export class CPU {
     }
 
     tick() {
-        // @TODO
-
         // fetch instructions
-        // decode
-        // execute
-        // update timers
         let opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1]
         this.pc = this.pc + 2
-
-        let instruction = parse(opcode)
-
+        let instruction = decode(opcode)
         this.exec(instruction)
-
         this.updateTimers()
-
-
     }
 
     public exec(instruction: Opcode) {

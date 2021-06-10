@@ -223,8 +223,7 @@ export function findValue(opcode: Bit16):  Bit8 {
     return opcode & 0xff
 }
 
-// @TODO rename to decode
-export function parse(opcode: Bit16): Opcode {
+export function decode(opcode: Bit16): Opcode {
 
     const [code, a, b, n] = split4Bit4(opcode)
     const address = findAddress(opcode)
