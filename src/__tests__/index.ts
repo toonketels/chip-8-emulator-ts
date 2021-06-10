@@ -1,8 +1,9 @@
-import {CPU, CpuOptions, VM} from "../vm";
+import {VM} from "../vm";
 import path from "path";
 import {print} from "./vm"
 import {Bit12, Bit8} from "../types";
 import {IO} from "../io";
+import {CPU, CpuOptions} from "../cpu";
 
 
 

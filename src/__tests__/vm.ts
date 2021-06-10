@@ -14,8 +14,8 @@ import {
     SUB, SUBN,
     XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS, SKP, SKNP, LD_Vx_K, DRW
 } from "../parse";
-import {CPU, CpuOptions} from "../vm";
 import {Bit8} from "../types";
+import {CPU, CpuOptions} from "../cpu";
 
 
 

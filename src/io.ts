@@ -1,6 +1,6 @@
 import {Bit12, Bit8} from "./types";
 import blessed from "blessed";
-import {CPU} from "./vm";
+import {CPU} from "./cpu";
 
 export interface IO {
     // @TODO better interface

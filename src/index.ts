@@ -1,6 +1,7 @@
-import {CPU, VM} from "./vm";
+import {VM} from "./vm";
 import path from "path";
 import {TerminalIO} from "./io";
+import {CPU} from "./cpu";
 
 
 main()
@@ -11,7 +12,7 @@ export function main() {
     // let rom = path.resolve('roms/chip8-test-rom.ch8');  // test ok
 
     // let rom = path.resolve('roms/15PUZZLE');   // not sure but renders
-    // let rom = path.resolve('roms/BLINKY');   // issue rendering left side 1 pxl added
+    let rom = path.resolve('roms/BLINKY');   // issue rendering left side 1 pxl added
     // let rom = path.resolve('roms/BLITZ');   // immediately goes to game over
 
     // game: destroy the brix
@@ -23,7 +24,7 @@ export function main() {
 
     // game
     // issue: too fast
-    let rom = path.resolve('roms/CONNECT4');
+    // let rom = path.resolve('roms/CONNECT4');
 
     // game
     // issue: rendering + doesnt wait for keypress to continue
