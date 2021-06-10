@@ -34,7 +34,7 @@ export function main() {
     // issue: doesnt wait
     // let rom = path.resolve('roms/HIDDEN');
 
-    let rom = path.resolve('roms/INVADERS');
+    let rom = path.resolve('roms/i.ch8');
 
     const vm = new VM({rom, io: (cpu: CPU) => new TerminalIO(cpu)})
 

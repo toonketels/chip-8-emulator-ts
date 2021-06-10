@@ -111,11 +111,9 @@ export class TerminalIO implements IO {
         for (let shift = 0; shift < BYTE; shift++) {
             let bit = (byte & (0b1 << shift)) >> shift
             let color = bit ? this.fg : this.bg
-            // @TODO better naming
-            let xx = (x * BYTE) + (BYTE - shift)
-            let coorX = xx * 2
+            let coorX = ((x * BYTE) + (BYTE - shift)) * 2
             let coorY = y
-            this.screen.fillRegion(color, '█', coorX, coorX + 2, coorY, coorY + 1)
+            this.screen.fillRegion(color, '█', coorX - 2, coorX, coorY, coorY + 1)
         }
     }
 

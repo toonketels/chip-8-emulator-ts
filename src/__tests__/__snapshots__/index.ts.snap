@@ -1,5 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Chip 8 test i.chi8 1`] = `
+"xxxxxxxx                                                        
+                                                                
+xxxxxxxx                                                        
+                                                                
+  xxxx                                                          
+                                                                
+  xxxx                                                          
+                                                                
+  xxxx                                                          
+                                                                
+  xxxx                                                          
+                                                                
+xxxxxxxx                                                        
+                                                                
+xxxxxxxx                                                        
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                
+                                                                "
+`;
+
 exports[`Chip 8 test_opcode 1`] = `
 "                                                                
  xxx x x  xxx x x      xxx xxx  xxx x x     xxx  xx xxx x x     

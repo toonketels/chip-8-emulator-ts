@@ -19,6 +19,16 @@ describe("Chip 8", () => {
         expect(print(vm.cpu)).toMatchSnapshot()
     })
 
+    test("test i.chi8", async () => {
+        let rom = path.resolve('roms/i.ch8');
+
+        const vm = new VM({rom, io: () => new NoOpIO()})
+
+        await vm.start({cycles: 100, cyclesPerFrame: 30})
+        vm.stop()
+        expect(print(vm.cpu)).toMatchSnapshot()
+    })
+
     // @TODO reneable once we know which ones are deterministic
     test.skip.each([
         ["roms/TEST_OPCODE"],
