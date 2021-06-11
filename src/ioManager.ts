@@ -19,15 +19,13 @@ export interface CpuIoManager {
     isKeyWithValuePressed(value: Bit8): boolean;
 }
 
-export interface IoManager extends DeviceIoManager, CpuIoManager, VmIoManager {}
-
-export class DefaultIoManager implements IoManager {
+export class IoManager implements DeviceIoManager, CpuIoManager, VmIoManager {
 
     static SCREEN_BASE_ADDRESS = 0x050
     static SCREEN_WIDTH = 64
-    static SCREEN_WIDTH_IN_BYTES = DefaultIoManager.SCREEN_WIDTH / 8
+    static SCREEN_WIDTH_IN_BYTES = IoManager.SCREEN_WIDTH / 8
     static SCREEN_HEIGHT = 32
-    static SCREEN_SIZE = DefaultIoManager.SCREEN_WIDTH * DefaultIoManager.SCREEN_HEIGHT / 8
+    static SCREEN_SIZE = IoManager.SCREEN_WIDTH * IoManager.SCREEN_HEIGHT / 8
     static KEY_PRESSED = 0x150
     static KEY_VALUE = 0x151
     
@@ -36,8 +34,8 @@ export class DefaultIoManager implements IoManager {
 
     constructor(private memory: Uint8Array, createIO: (ops: IOOps) => IO) {
         this.io = createIO({
-            screenWidth: DefaultIoManager.SCREEN_WIDTH,
-            screenHeight: DefaultIoManager.SCREEN_HEIGHT,
+            screenWidth: IoManager.SCREEN_WIDTH,
+            screenHeight: IoManager.SCREEN_HEIGHT,
             iom: this
         })
 
@@ -47,8 +45,8 @@ export class DefaultIoManager implements IoManager {
 
 
     clearScreen(): void {
-        let screenBegin = DefaultIoManager.SCREEN_BASE_ADDRESS
-        let screenEnd = DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE
+        let screenBegin = IoManager.SCREEN_BASE_ADDRESS
+        let screenEnd = IoManager.SCREEN_BASE_ADDRESS + IoManager.SCREEN_SIZE
 
         // flip bits off
         for (let i = screenBegin; i < screenEnd; i++)
@@ -61,8 +59,8 @@ export class DefaultIoManager implements IoManager {
     updateScreen(address: Bit12, byte: Bit8): void {
 
         const BYTE = 8;
-        let x = (address - DefaultIoManager.SCREEN_BASE_ADDRESS) % DefaultIoManager.SCREEN_WIDTH_IN_BYTES
-        let y = Math.floor((address - DefaultIoManager.SCREEN_BASE_ADDRESS) / DefaultIoManager.SCREEN_WIDTH_IN_BYTES)
+        let x = (address - IoManager.SCREEN_BASE_ADDRESS) % IoManager.SCREEN_WIDTH_IN_BYTES
+        let y = Math.floor((address - IoManager.SCREEN_BASE_ADDRESS) / IoManager.SCREEN_WIDTH_IN_BYTES)
 
         for (let shift = 0; shift < BYTE; shift++) {
             let isOn = ((byte & (0b1 << shift)) >> shift)!!
@@ -92,20 +90,20 @@ export class DefaultIoManager implements IoManager {
         let paddingLeft = x % BYTE_SIZE
         let paddingRight = BYTE_SIZE - paddingLeft
 
-        let offset = DefaultIoManager.SCREEN_BASE_ADDRESS + (DefaultIoManager.SCREEN_WIDTH_IN_BYTES * y) + Math.floor(x / BYTE_SIZE)
+        let offset = IoManager.SCREEN_BASE_ADDRESS + (IoManager.SCREEN_WIDTH_IN_BYTES * y) + Math.floor(x / BYTE_SIZE)
         for (let n = 0; n < spriteHeight; n++) {
 
             let toWrite = this.memory[spriteAddress + n]
             let toWriteMSB = toWrite >> paddingLeft              // if aligned: MSB === toWrite
             let toWriteLSB = isAligned ? 0x00 : (toWrite << paddingRight) & 0xff
 
-            let addressMSB = offset + (DefaultIoManager.SCREEN_WIDTH_IN_BYTES * n);
+            let addressMSB = offset + (IoManager.SCREEN_WIDTH_IN_BYTES * n);
 
             // adjust for vertical wrapping
-            let needsToWrap = y + n >= DefaultIoManager.SCREEN_HEIGHT
+            let needsToWrap = y + n >= IoManager.SCREEN_HEIGHT
             if (needsToWrap) {
-                let nWrapped = (y + n) % DefaultIoManager.SCREEN_HEIGHT
-                addressMSB = DefaultIoManager.SCREEN_BASE_ADDRESS + (DefaultIoManager.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(x / BYTE_SIZE)
+                let nWrapped = (y + n) % IoManager.SCREEN_HEIGHT
+                addressMSB = IoManager.SCREEN_BASE_ADDRESS + (IoManager.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(x / BYTE_SIZE)
             }
 
             {
@@ -126,8 +124,8 @@ export class DefaultIoManager implements IoManager {
                 let addressLSB = addressMSB + 1;
 
                 // correct for horizontal wrapping
-                let needsToWrap = addressLSB % DefaultIoManager.SCREEN_WIDTH_IN_BYTES === 0
-                addressLSB = needsToWrap ? addressLSB - DefaultIoManager.SCREEN_WIDTH_IN_BYTES : addressLSB
+                let needsToWrap = addressLSB % IoManager.SCREEN_WIDTH_IN_BYTES === 0
+                addressLSB = needsToWrap ? addressLSB - IoManager.SCREEN_WIDTH_IN_BYTES : addressLSB
 
                 let read = this.memory[addressLSB];
                 let toWrite = read ^ toWriteLSB
@@ -145,25 +143,25 @@ export class DefaultIoManager implements IoManager {
     }
 
     isKeyPressed(): boolean {
-        return this.memory[DefaultIoManager.KEY_PRESSED] === 0xff;
+        return this.memory[IoManager.KEY_PRESSED] === 0xff;
     }
 
     getPressedKey(): Bit8 | undefined {
-        return this.isKeyPressed() ? this.memory[DefaultIoManager.KEY_VALUE] : undefined;
+        return this.isKeyPressed() ? this.memory[IoManager.KEY_VALUE] : undefined;
     }
 
     isKeyWithValuePressed(value: number): boolean {
-        return this.memory[DefaultIoManager.KEY_PRESSED] === 0xff && this.memory[DefaultIoManager.KEY_VALUE] === value
+        return this.memory[IoManager.KEY_PRESSED] === 0xff && this.memory[IoManager.KEY_VALUE] === value
 
     }
 
     pressKey(key: Bit8): void {
-        this.memory[DefaultIoManager.KEY_VALUE] = key
-        this.memory[DefaultIoManager.KEY_PRESSED] = 0xff
+        this.memory[IoManager.KEY_VALUE] = key
+        this.memory[IoManager.KEY_PRESSED] = 0xff
     }
 
     releaseKey(): void {
-        this.memory[DefaultIoManager.KEY_PRESSED] = 0x00
+        this.memory[IoManager.KEY_PRESSED] = 0x00
     }
 
     renderScreen(): void {

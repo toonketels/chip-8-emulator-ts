@@ -16,7 +16,7 @@ import {
 } from "../decode";
 import {Bit12, Bit8} from "../types";
 import {CPU, CpuOptions} from "../cpu";
-import {DefaultIoManager} from "../ioManager";
+import {IoManager} from "../ioManager";
 import {IO} from "../io";
 
 
@@ -34,14 +34,14 @@ describe("exec", () => {
 
             function paintScreen() {
                 // paint on screen by flipping bits to 1
-                for (let i = 0; i < DefaultIoManager.SCREEN_SIZE; i++)
-                    cpu.memory[DefaultIoManager.SCREEN_BASE_ADDRESS + i] = 0xff
+                for (let i = 0; i < IoManager.SCREEN_SIZE; i++)
+                    cpu.memory[IoManager.SCREEN_BASE_ADDRESS + i] = 0xff
             }
 
             function expectScreenCleared() {
                 // all pixels off means all bits to 0
-                for (let i = 0; i < DefaultIoManager.SCREEN_SIZE; i++) {
-                    expect(cpu.memory[DefaultIoManager.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
+                for (let i = 0; i < IoManager.SCREEN_SIZE; i++) {
+                    expect(cpu.memory[IoManager.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
                 }
             }
         })
@@ -476,7 +476,7 @@ describe("exec", () => {
         test("Handles horizontal wrapping", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
-            cpu.rs[0x0] = DefaultIoManager.SCREEN_WIDTH - 4
+            cpu.rs[0x0] = IoManager.SCREEN_WIDTH - 4
             cpu.rs[0x1] = 2
 
             cpu.registerI = 0x200
@@ -495,7 +495,7 @@ describe("exec", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
             cpu.rs[0x0] = 4
-            cpu.rs[0x1] = DefaultIoManager.SCREEN_HEIGHT - 2
+            cpu.rs[0x1] = IoManager.SCREEN_HEIGHT - 2
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0b11011111
@@ -702,7 +702,7 @@ describe("exec", () => {
         test("asci prints the screen", () => {
            let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++)
+            for (let i = IoManager.SCREEN_BASE_ADDRESS; i < IoManager.SCREEN_BASE_ADDRESS + IoManager.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0b10111101
 
             expect(print(cpu)).toMatchSnapshot()
@@ -711,7 +711,7 @@ describe("exec", () => {
         test("should handle leading zeros well", () => {
             let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++)
+            for (let i = IoManager.SCREEN_BASE_ADDRESS; i < IoManager.SCREEN_BASE_ADDRESS + IoManager.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0x1
 
             expect(print(cpu)).toMatchSnapshot()
@@ -723,7 +723,7 @@ describe("exec", () => {
 
 function aCPU(opts: Partial<CpuOptions> = {}): CPU {
     let memory = new Uint8Array(10);
-    let defaultOptions = {memory, programStart: 0, iom: new DefaultIoManager(opts.memory || memory, () => new NoOpIO())};
+    let defaultOptions = {memory, programStart: 0, iom: new IoManager(opts.memory || memory, () => new NoOpIO())};
     let options = {...defaultOptions, ...opts}
     let cpu = new CPU(options)
 
@@ -734,7 +734,7 @@ export function print(cpu: CPU): string {
     let output = ""
     let cursor = 0
 
-    for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++) {
+    for (let i = IoManager.SCREEN_BASE_ADDRESS; i < IoManager.SCREEN_BASE_ADDRESS + IoManager.SCREEN_SIZE; i++) {
         if (cursor === 8) {
             output += "\n"
             cursor = 0
@@ -757,12 +757,12 @@ export function print(cpu: CPU): string {
 }
 
 function pressKey(cpu: CPU, key: number) {
-    cpu.memory[DefaultIoManager.KEY_VALUE] = key
-    cpu.memory[DefaultIoManager.KEY_PRESSED] = 0xff
+    cpu.memory[IoManager.KEY_VALUE] = key
+    cpu.memory[IoManager.KEY_PRESSED] = 0xff
 }
 
 function releaseKey(cpu: CPU) {
-    cpu.memory[DefaultIoManager.KEY_PRESSED] = 0x00
+    cpu.memory[IoManager.KEY_PRESSED] = 0x00
 }
 
 // @TODO move to test helper files
