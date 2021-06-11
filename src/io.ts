@@ -1,12 +1,19 @@
-import {Bit12, Bit8} from "./types";
 import blessed from "blessed";
-import {IOMM, IOMemoryMapper} from "./ioMemoryMapper";
+import {DeviceIoManager} from "./ioManager";
 
 export interface IO {
-    // @TODO better interface
-    updateScreen(screenBuffer: Uint8Array, address: Bit12, byte: Bit8): void
+
+    updatePixel(x: number, y: number, isOn: boolean): void
 
     renderScreen(): void
+
+    clearScreen(): void
+}
+
+export interface IOOps {
+    screenWidth: number
+    screenHeight: number
+    iom: DeviceIoManager
 }
 
 export class TerminalIO implements IO {
@@ -16,12 +23,12 @@ export class TerminalIO implements IO {
     private bg = blessed.helpers.attrToBinary({fg: 'blue'})
     // @ts-ignore
     private fg = blessed.helpers.attrToBinary({fg: 'red'})
-    private keypressed: NodeJS.Timeout | undefined;
-    private iomm: IOMM
+    private keyPressed: NodeJS.Timeout | undefined;
+    private ops: IOOps
 
-    constructor(iomm: IOMM) {
-        this.iomm = iomm
-        this.screen = blessed.screen({smartCSR: true, width: IOMemoryMapper.SCREEN_WIDTH * 2, height: IOMemoryMapper.SCREEN_HEIGHT})
+    constructor(ops: IOOps) {
+        this.ops = ops
+        this.screen = blessed.screen({smartCSR: true, width: ops.screenWidth * 2, height: ops.screenHeight})
 
         this.initScreen()
         this.initKeyboard()
@@ -29,10 +36,7 @@ export class TerminalIO implements IO {
 
     private initScreen(): void {
         this.screen.title = `CHIP 8`
-        this.screen.fillRegion(this.bg, '█', 0, IOMemoryMapper.SCREEN_WIDTH * 2, 0, IOMemoryMapper.SCREEN_HEIGHT)
-        
-        this.iomm.onScreenUpdated(this.updateScreen.bind(this))
-        this.iomm.onScreenCleared(this.clearScreen.bind(this))
+        this.screen.fillRegion(this.bg, '█', 0, this.ops.screenWidth * 2, 0, this.ops.screenHeight)
     }
 
     private initKeyboard(): void {
@@ -100,34 +104,23 @@ export class TerminalIO implements IO {
         this.screen.render()
     }
 
-    updateScreen(screenBuffer: Uint8Array, address: Bit12, byte: Bit8): void {
+    updatePixel(x: number, y: number, isOn: boolean) {
+        let color = isOn ? this.fg : this.bg
+        this.screen.fillRegion(color, '█', x * 2, x * 2 + 2, y, y + 1)
 
-        const BYTE = 8;
-        let x = (address - IOMemoryMapper.SCREEN_BASE_ADDRESS) % IOMemoryMapper.SCREEN_WIDTH_IN_BYTES
-        let y = Math.floor((address - IOMemoryMapper.SCREEN_BASE_ADDRESS) / IOMemoryMapper.SCREEN_WIDTH_IN_BYTES)
-
-        for (let shift = 0; shift < BYTE; shift++) {
-            let bit = (byte & (0b1 << shift)) >> shift
-            let color = bit ? this.fg : this.bg
-            let coorX = ((x * BYTE) + (BYTE - shift)) * 2
-            let coorY = y
-            this.screen.fillRegion(color, '█', coorX - 2, coorX, coorY, coorY + 1)
-        }
     }
 
     clearScreen(): void {
-        // this.screen.clearRegion(0, IOMemoryMapper.SCREEN_WIDTH * 2, 0, IOMemoryMapper.SCREEN_HEIGHT)
-        this.screen.fillRegion(this.bg, '█', 0, IOMemoryMapper.SCREEN_WIDTH * 2, 0, IOMemoryMapper.SCREEN_HEIGHT)
+        this.screen.fillRegion(this.bg, '█', 0, this.ops.screenWidth * 2, 0, this.ops.screenHeight)
     }
 
     keypress(key: number) {
-        let iomm = this.iomm
+        let { pressKey, releaseKey } = this.ops.iom
 
-        iomm.pressKey(key)
+       pressKey.apply(this.ops.iom, [key])
 
-
-        if (this.keypressed !== undefined) clearTimeout(this.keypressed)
-        this.keypressed = setTimeout(() => iomm.releaseKey(), 100)
+        if (this.keyPressed !== undefined) clearTimeout(this.keyPressed)
+        this.keyPressed = setTimeout(() => releaseKey.apply(this.ops.iom), 100)
     }
 
 

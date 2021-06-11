@@ -39,12 +39,12 @@ import {
     SUBN,
     XOR
 } from "./decode";
-import {IOMM} from "./ioMemoryMapper";
+import {CpuIoManager, IoManager} from "./ioManager";
 
 export interface CpuOptions {
     memory: Uint8Array,
     programStart: Bit16,
-    iomm: IOMM
+    iom: CpuIoManager
 }
 
 export class CPU {
@@ -93,12 +93,12 @@ export class CPU {
     private static SPRITE_BASE_ADDRESS = 0x000
 
     // memory mapped IO
-    private iomm: IOMM
+    private iom: CpuIoManager
 
-    constructor({memory, programStart, iomm}: CpuOptions) {
+    constructor({memory, programStart, iom}: CpuOptions) {
         this.memory = memory
         this.pc = programStart
-        this.iomm = iomm
+        this.iom = iom
     }
 
     initialize() {
@@ -255,7 +255,6 @@ export class CPU {
                 this.rs[i.register] = this.rs[i.register] << 1
                 break
             }
-            // @TODO mybe rename to LD_I
             case LD_I_nnn: {
                 let i = instruction as LD_I_nnn
                 this.registerI = i.address
@@ -278,7 +277,6 @@ export class CPU {
             }
             case JP0: {
                 let i = instruction as JP0
-                // @TODO check for memory out of bounds error?
                 this.pc = this.rs[0] + i.address
                 break
             }
@@ -311,17 +309,17 @@ export class CPU {
                 // Resetting the program counter to the previous instruction forces reevaluation of this instruction
                 // in the next cycle.
                 let i = instruction as LD_Vx_K
-                if (!this.iomm.isKeyPressed()) {
+                if (!this.iom.isKeyPressed()) {
                     this.pc = this.pc - 2
                     break
                 }
                 // @TODO better interface
-                this.rs[i.register] = this.iomm.getPressedKey()!
+                this.rs[i.register] = this.iom.getPressedKey()!
                 // No need to increment the program counter with 2 as this is done automatically in each tick
                 break
             }
             case CLS: {
-                this.iomm.clearScreen()
+                this.iom.clearScreen()
                 break
             }
             case DRW: {
@@ -331,7 +329,7 @@ export class CPU {
                 let spriteAddress = this.registerI
                 let spriteHeight = i.nibble
 
-                let pixelsErased = this.iomm.draw(coordinateX, coordinateY, spriteAddress, spriteHeight)
+                let pixelsErased = this.iom.draw(coordinateX, coordinateY, spriteAddress, spriteHeight)
 
                 this.rs[0xf] = pixelsErased ? 0x01 : 0x00
 
@@ -339,12 +337,12 @@ export class CPU {
             }
             case SKP: {
                 let i = instruction as SKP
-                if (this.iomm.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
+                if (this.iom.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
                 break
             }
             case SKNP: {
                 let i = instruction as SKNP
-                if (!this.iomm.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
+                if (!this.iom.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
                 break
             }
             default:

@@ -1,9 +1,7 @@
 import {VM} from "../vm";
 import path from "path";
 import {print} from "./vm"
-import {Bit12, Bit8} from "../types";
 import {IO} from "../io";
-import {CPU, CpuOptions} from "../cpu";
 
 
 
@@ -69,7 +67,10 @@ class NoOpIO implements IO {
     renderScreen(): void {
     }
 
-    updateScreen(screenBuffer: Uint8Array, address: Bit12, byte: Bit8): void {
+    clearScreen(): void {
+    }
+
+    updatePixel(x: number, y: number, isOn: boolean): void {
     }
 
 }

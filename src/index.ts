@@ -1,8 +1,6 @@
 import {VM} from "./vm";
 import path from "path";
-import {TerminalIO} from "./io";
-import {CPU} from "./cpu";
-import {IOMM} from "./ioMemoryMapper";
+import {IOOps, TerminalIO} from "./io";
 
 
 main()
@@ -37,7 +35,7 @@ export function main() {
 
     let rom = path.resolve('roms/INVADERS');
 
-    const vm = new VM({rom, io: (iomm: IOMM) => new TerminalIO(iomm)})
+    const vm = new VM({rom, io: (ops: IOOps) => new TerminalIO(ops)})
 
     vm.start()
 

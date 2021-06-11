@@ -1,7 +1,7 @@
 import * as fs from "fs";
-import {IO} from "./io";
+import {IO, IOOps} from "./io";
 import {CPU} from "./cpu";
-import {IOMemoryMapper, IOMM} from "./ioMemoryMapper";
+import {DefaultIoManager, IoManager, VmIoManager} from "./ioManager";
 
 interface StartOps {
     cycles?: number,
@@ -13,8 +13,6 @@ export class VM {
     private shouldStop = false
     private romPath: string
     private cycles = 0
-
-    private io: IO
 
     // 4KB RAM, from location 0x000 (0) to 0xFFF (4095)
     //
@@ -29,15 +27,15 @@ export class VM {
     //
     // 0xFFF (4095)  End of Chip-8 RAM
     public memory: Uint8Array
-    public iomm: IOMM
+    public iomm: VmIoManager
     public cpu: CPU
 
-    constructor(ops: {rom: string, io: (iomm: IOMM) => IO}) {
+    constructor(ops: {rom: string, io: (iomm: IOOps) => IO}) {
         this.romPath = ops.rom
         this.memory = new Uint8Array(VM.size_4K)
-        this.iomm = new IOMemoryMapper(this.memory)
-        this.io = ops.io(this.iomm)
-        this.cpu =new CPU({memory: this.memory, programStart: 0x200, iomm: this.iomm})
+        let iom =  new DefaultIoManager(this.memory, ops.io)
+        this.cpu =new CPU({memory: this.memory, programStart: 0x200, iom: iom})
+        this.iomm = iom
     }
 
     // Start the vm
@@ -65,7 +63,6 @@ export class VM {
 
                     // only render screen every 15 ms ticks
                     this.updateScreen()
-                    this.checkInput()
                 } else {
                     clearInterval(cancel)
                     resolve()
@@ -83,11 +80,7 @@ export class VM {
     }
 
     private updateScreen() {
-        this.io.renderScreen()
-    }
-
-    private checkInput() {
-        // @TODO
+        this.iomm.renderScreen()
     }
 
     private loadRom() {

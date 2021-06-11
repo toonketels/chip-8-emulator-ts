@@ -14,9 +14,10 @@ import {
     SUB, SUBN,
     XOR, LD_Vx_DT, LD_ST_Vx, ADD_I_Vx, LD_I_Vx, LD_Vx_I, RND, RET, LD_F_Vx, LD_B_Vx, CLS, SKP, SKNP, LD_Vx_K, DRW
 } from "../decode";
-import {Bit8} from "../types";
+import {Bit12, Bit8} from "../types";
 import {CPU, CpuOptions} from "../cpu";
-import {IOMemoryMapper, IOMM} from "../ioMemoryMapper";
+import {DefaultIoManager} from "../ioManager";
+import {IO} from "../io";
 
 
 
@@ -33,14 +34,14 @@ describe("exec", () => {
 
             function paintScreen() {
                 // paint on screen by flipping bits to 1
-                for (let i = 0; i < IOMemoryMapper.SCREEN_SIZE; i++)
-                    cpu.memory[IOMemoryMapper.SCREEN_BASE_ADDRESS + i] = 0xff
+                for (let i = 0; i < DefaultIoManager.SCREEN_SIZE; i++)
+                    cpu.memory[DefaultIoManager.SCREEN_BASE_ADDRESS + i] = 0xff
             }
 
             function expectScreenCleared() {
                 // all pixels off means all bits to 0
-                for (let i = 0; i < IOMemoryMapper.SCREEN_SIZE; i++) {
-                    expect(cpu.memory[IOMemoryMapper.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
+                for (let i = 0; i < DefaultIoManager.SCREEN_SIZE; i++) {
+                    expect(cpu.memory[DefaultIoManager.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
                 }
             }
         })
@@ -475,7 +476,7 @@ describe("exec", () => {
         test("Handles horizontal wrapping", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
-            cpu.rs[0x0] = IOMemoryMapper.SCREEN_WIDTH - 4
+            cpu.rs[0x0] = DefaultIoManager.SCREEN_WIDTH - 4
             cpu.rs[0x1] = 2
 
             cpu.registerI = 0x200
@@ -494,7 +495,7 @@ describe("exec", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
             cpu.rs[0x0] = 4
-            cpu.rs[0x1] = IOMemoryMapper.SCREEN_HEIGHT - 2
+            cpu.rs[0x1] = DefaultIoManager.SCREEN_HEIGHT - 2
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0b11011111
@@ -701,7 +702,7 @@ describe("exec", () => {
         test("asci prints the screen", () => {
            let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++)
+            for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0b10111101
 
             expect(print(cpu)).toMatchSnapshot()
@@ -710,7 +711,7 @@ describe("exec", () => {
         test("should handle leading zeros well", () => {
             let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++)
+            for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0x1
 
             expect(print(cpu)).toMatchSnapshot()
@@ -722,7 +723,7 @@ describe("exec", () => {
 
 function aCPU(opts: Partial<CpuOptions> = {}): CPU {
     let memory = new Uint8Array(10);
-    let defaultOptions = {memory, programStart: 0, iomm: new IOMemoryMapper(opts.memory || memory)};
+    let defaultOptions = {memory, programStart: 0, iom: new DefaultIoManager(opts.memory || memory, () => new NoOpIO())};
     let options = {...defaultOptions, ...opts}
     let cpu = new CPU(options)
 
@@ -733,7 +734,7 @@ export function print(cpu: CPU): string {
     let output = ""
     let cursor = 0
 
-    for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++) {
+    for (let i = DefaultIoManager.SCREEN_BASE_ADDRESS; i < DefaultIoManager.SCREEN_BASE_ADDRESS + DefaultIoManager.SCREEN_SIZE; i++) {
         if (cursor === 8) {
             output += "\n"
             cursor = 0
@@ -756,10 +757,23 @@ export function print(cpu: CPU): string {
 }
 
 function pressKey(cpu: CPU, key: number) {
-    cpu.memory[IOMemoryMapper.KEY_VALUE] = key
-    cpu.memory[IOMemoryMapper.KEY_PRESSED] = 0xff
+    cpu.memory[DefaultIoManager.KEY_VALUE] = key
+    cpu.memory[DefaultIoManager.KEY_PRESSED] = 0xff
 }
 
 function releaseKey(cpu: CPU) {
-    cpu.memory[IOMemoryMapper.KEY_PRESSED] = 0x00
+    cpu.memory[DefaultIoManager.KEY_PRESSED] = 0x00
+}
+
+// @TODO move to test helper files
+class NoOpIO implements IO {
+    renderScreen(): void {
+    }
+
+    clearScreen(): void {
+    }
+
+    updatePixel(x: number, y: number, isOn: boolean): void {
+    }
+
 }
