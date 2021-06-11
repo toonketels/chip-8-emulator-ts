@@ -28,9 +28,9 @@ export class IoManager implements DeviceIoManager, CpuIoManager, VmIoManager {
     static SCREEN_SIZE = IoManager.SCREEN_WIDTH * IoManager.SCREEN_HEIGHT / 8
     static KEY_PRESSED = 0x150
     static KEY_VALUE = 0x151
-    
-    public events = new EventEmitter()
-    private io: IO
+
+    private readonly events = new EventEmitter()
+    private readonly io: IO
 
     constructor(private memory: Uint8Array, createIO: (ops: IOOps) => IO) {
         this.io = createIO({

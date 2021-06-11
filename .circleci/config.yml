@@ -1,0 +1,42 @@
+version: '2.1'
+orbs:
+  node: circleci/node@4.2.1
+jobs:
+  test:
+    executor:
+      name: node/default
+      tag: '15.14.0'
+    steps:
+      - checkout
+      - run:
+          name: Check node version
+          command: node --version
+      - node/install-npm:
+          version: '7.13.0'
+      - run:
+          name: Check npm version
+          command: npm --version
+      - node/install-packages
+      - run:
+          name: Build code
+          command: npm run build --verbose
+      - run:
+          name: Run tests
+          command: npm run test -- --verbose --ci --runInBand
+      - store_test_results:
+          path: ./reports/junit/
+      - run:
+          name: Create dist tarball
+          command: tar -cvf dist.tar ./dist/
+      - run:
+          name: Create reports tarball
+          command: tar -cvf reports.tar ./reports/
+      - store_artifacts:
+          path: ./reports.tar
+      - store_artifacts:
+          path: ./dist.tar
+
+workflows:
+  test:
+    jobs:
+      - test
