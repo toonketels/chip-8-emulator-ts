@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import {IO} from "./io";
 import {CPU} from "./cpu";
+import {IOMemoryMapper, IOMM} from "./ioMemoryMapper";
 
 interface StartOps {
     cycles?: number,
@@ -8,18 +9,12 @@ interface StartOps {
 }
 
 export class VM {
-    private static size_4K: number = 4096
-    private static size_stack: number = 16
+    static size_4K: number = 4096
     private shouldStop = false
     private romPath: string
     private cycles = 0
 
     private io: IO
-
-    // An array of 16 16-bit values
-    // used to store the address that the interpreter shoud return to when finished with a subroutine.
-    // Chip-8 allows for start to 16 levels of nested subroutines.
-    public stack = new Uint16Array(VM.size_stack)
 
     // 4KB RAM, from location 0x000 (0) to 0xFFF (4095)
     //
@@ -33,17 +28,17 @@ export class VM {
     //              Chip-8 program/data space
     //
     // 0xFFF (4095)  End of Chip-8 RAM
-    public memory = new Uint8Array(VM.size_4K)
-    public cpu = new CPU({memory: this.memory, stack: this.stack, programStart: 0x200})
+    public memory: Uint8Array
+    public iomm: IOMM
+    public cpu: CPU
 
-    constructor(ops: {rom: string, io: (cpu: CPU) => IO}) {
+    constructor(ops: {rom: string, io: (iomm: IOMM) => IO}) {
         this.romPath = ops.rom
-        this.io = ops.io(this.cpu)
+        this.memory = new Uint8Array(VM.size_4K)
+        this.iomm = new IOMemoryMapper(this.memory)
+        this.io = ops.io(this.iomm)
+        this.cpu =new CPU({memory: this.memory, programStart: 0x200, iomm: this.iomm})
     }
-
-    // @TODO input
-    // @TODO output
-
 
     // Start the vm
     // flow:

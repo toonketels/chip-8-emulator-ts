@@ -2,6 +2,7 @@ import {VM} from "./vm";
 import path from "path";
 import {TerminalIO} from "./io";
 import {CPU} from "./cpu";
+import {IOMM} from "./ioMemoryMapper";
 
 
 main()
@@ -34,9 +35,9 @@ export function main() {
     // issue: doesnt wait
     // let rom = path.resolve('roms/HIDDEN');
 
-    let rom = path.resolve('roms/i.ch8');
+    let rom = path.resolve('roms/INVADERS');
 
-    const vm = new VM({rom, io: (cpu: CPU) => new TerminalIO(cpu)})
+    const vm = new VM({rom, io: (iomm: IOMM) => new TerminalIO(iomm)})
 
     vm.start()
 

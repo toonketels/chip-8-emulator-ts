@@ -39,17 +39,17 @@ import {
     SUBN,
     XOR
 } from "./decode";
+import {IOMM} from "./ioMemoryMapper";
 
 export interface CpuOptions {
     memory: Uint8Array,
-    stack: Uint16Array,
-    programStart: Bit16
+    programStart: Bit16,
+    iomm: IOMM
 }
 
 export class CPU {
 
-    // @TODO remove
-    public emitter = new EventEmitter()
+    static SIZE_STACK: number = 16
 
     // 16 general purpose 8-bit rs,
     // usually referred to as Vx, where x is a hexadecimal digit (0 through F).
@@ -82,26 +82,23 @@ export class CPU {
     // stack counter
     public sc: Bit8 = 0
 
-    public stack: Uint16Array
     public memory: Uint8Array
 
-    // @TODO let vm pass the base address if it is loading the sprite data
+    // An array of 16 16-bit values
+    // used to store the address that the interpreter shoud return to when finished with a subroutine.
+    // Chip-8 allows for start to 16 levels of nested subroutines.
+    public stack = new Uint16Array(CPU.SIZE_STACK)
+
     private static SPRITE_SIZE = 5
     private static SPRITE_BASE_ADDRESS = 0x000
-    // memory mapped IO
-    // @TODO pass from vm
-    public static SCREEN_BASE_ADDRESS = 0x050
-    public static SCREEN_WIDTH = 64
-    public static SCREEN_WIDTH_IN_BYTES = CPU.SCREEN_WIDTH / 8
-    public static SCREEN_HEIGHT = 32
-    public static SCREEN_SIZE = CPU.SCREEN_WIDTH * CPU.SCREEN_HEIGHT / 8
-    public static KEY_PRESSED = 0x150
-    public static KEY_VALUE = 0x151
 
-    constructor({memory, stack, programStart}: CpuOptions) {
+    // memory mapped IO
+    private iomm: IOMM
+
+    constructor({memory, programStart, iomm}: CpuOptions) {
         this.memory = memory
-        this.stack = stack
         this.pc = programStart
+        this.iomm = iomm
     }
 
     initialize() {
@@ -314,96 +311,27 @@ export class CPU {
                 // Resetting the program counter to the previous instruction forces reevaluation of this instruction
                 // in the next cycle.
                 let i = instruction as LD_Vx_K
-                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff
-                if (!isKeyPressed) {
+                if (!this.iomm.isKeyPressed()) {
                     this.pc = this.pc - 2
                     break
                 }
-                this.rs[i.register] = this.memory[CPU.KEY_VALUE]
+                // @TODO better interface
+                this.rs[i.register] = this.iomm.getPressedKey()!
                 // No need to increment the program counter with 2 as this is done automatically in each tick
                 break
             }
             case CLS: {
-                let screenBegin = CPU.SCREEN_BASE_ADDRESS
-                let screenEnd = CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE
-
-                // flip app bits off
-                for (let i = screenBegin; i < screenEnd; i++)
-                    this.memory[i] = 0x00
-
-                // @TODO better interface
-                this.emitter.emit("screenCleared")
-
+                this.iomm.clearScreen()
                 break
             }
             case DRW: {
-                // @TODO clean up
-                const BYTE_SIZE = 8
                 let i = instruction as DRW
-                let pixelsErased = false
                 let coordinateX = this.rs[i.registerA]
                 let coordinateY = this.rs[i.registerB]
+                let spriteAddress = this.registerI
+                let spriteHeight = i.nibble
 
-                if (coordinateX === undefined || coordinateY === undefined) throw new Error(`CPU exec draw no coordinate ${coordinateX} ${coordinateY}`)
-
-                let isAligned = coordinateX % BYTE_SIZE === 0
-
-                // If not aligned: write 2 bytes padded with zeros
-                // Ex:
-                //     |10011001|        | => with 3 bits padded on the left
-                //     |   10011|001     |
-
-                let paddingLeft = coordinateX % BYTE_SIZE
-                let paddingRight = BYTE_SIZE - paddingLeft
-
-                let offset = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * coordinateY) + Math.floor(coordinateX / BYTE_SIZE)
-                for (let n = 0; n < i.nibble; n++) {
-
-                    let toWrite = this.memory[this.registerI + n]
-                    let toWriteMSB = toWrite >> paddingLeft              // if aligned: MSB === toWrite
-                    let toWriteLSB = isAligned ? 0x00 : (toWrite << paddingRight) & 0xff
-
-                    let addressMSB = offset + (CPU.SCREEN_WIDTH_IN_BYTES * n);
-
-                    // adjust for vertical wrapping
-                    let needsToWrap = coordinateY + n >= CPU.SCREEN_HEIGHT
-                    if (needsToWrap) {
-                        let nWrapped = (coordinateY + n) % CPU.SCREEN_HEIGHT
-                        addressMSB = CPU.SCREEN_BASE_ADDRESS + (CPU.SCREEN_WIDTH_IN_BYTES * nWrapped) + Math.floor(coordinateX / BYTE_SIZE)
-                    }
-
-                    {
-                        let read = this.memory[addressMSB]
-                        let toWrite = read ^ toWriteMSB
-                        this.memory[addressMSB] = toWrite
-
-
-                        this.emitter.emit("screenUpdated", addressMSB, toWrite)
-
-                        // check if we erased a pixel
-                        // since XOR is stricter than OR, if they are not the same,
-                        // it means we erased at least one pixel
-                        pixelsErased = pixelsErased || (toWrite !== (read | toWriteMSB))
-                    }
-
-                    if (!isAligned) {
-                        let addressLSB = addressMSB + 1;
-
-                        // correct for horizontal wrapping
-                        let needsToWrap = addressLSB % CPU.SCREEN_WIDTH_IN_BYTES === 0
-                        addressLSB = needsToWrap ? addressLSB - CPU.SCREEN_WIDTH_IN_BYTES : addressLSB
-
-                        let read = this.memory[addressLSB];
-                        let toWrite = read ^ toWriteLSB
-                        this.memory[addressLSB] = toWrite
-
-                        this.emitter.emit("screenUpdated", addressLSB, toWrite)
-
-
-                        // check if we erased a pixel
-                        pixelsErased = pixelsErased || (toWrite !== (read | toWriteLSB))
-                    }
-                }
+                let pixelsErased = this.iomm.draw(coordinateX, coordinateY, spriteAddress, spriteHeight)
 
                 this.rs[0xf] = pixelsErased ? 0x01 : 0x00
 
@@ -411,14 +339,12 @@ export class CPU {
             }
             case SKP: {
                 let i = instruction as SKP
-                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff && this.memory[CPU.KEY_VALUE] === this.rs[i.register]
-                if (isKeyPressed) this.pc = this.pc + 2
+                if (this.iomm.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
                 break
             }
             case SKNP: {
                 let i = instruction as SKNP
-                let isKeyPressed = this.memory[CPU.KEY_PRESSED] === 0xff && this.memory[CPU.KEY_VALUE] === this.rs[i.register]
-                if (!isKeyPressed) this.pc = this.pc + 2
+                if (!this.iomm.isKeyWithValuePressed(this.rs[i.register])) this.pc = this.pc + 2
                 break
             }
             default:

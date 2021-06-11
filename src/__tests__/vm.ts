@@ -16,6 +16,7 @@ import {
 } from "../decode";
 import {Bit8} from "../types";
 import {CPU, CpuOptions} from "../cpu";
+import {IOMemoryMapper, IOMM} from "../ioMemoryMapper";
 
 
 
@@ -32,14 +33,14 @@ describe("exec", () => {
 
             function paintScreen() {
                 // paint on screen by flipping bits to 1
-                for (let i = 0; i < CPU.SCREEN_SIZE; i++)
-                    cpu.memory[CPU.SCREEN_BASE_ADDRESS + i] = 0xff
+                for (let i = 0; i < IOMemoryMapper.SCREEN_SIZE; i++)
+                    cpu.memory[IOMemoryMapper.SCREEN_BASE_ADDRESS + i] = 0xff
             }
 
             function expectScreenCleared() {
                 // all pixels off means all bits to 0
-                for (let i = 0; i < CPU.SCREEN_SIZE; i++) {
-                    expect(cpu.memory[CPU.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
+                for (let i = 0; i < IOMemoryMapper.SCREEN_SIZE; i++) {
+                    expect(cpu.memory[IOMemoryMapper.SCREEN_BASE_ADDRESS + i]).toEqual(0x00)
                 }
             }
         })
@@ -474,7 +475,7 @@ describe("exec", () => {
         test("Handles horizontal wrapping", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
-            cpu.rs[0x0] = CPU.SCREEN_WIDTH - 4
+            cpu.rs[0x0] = IOMemoryMapper.SCREEN_WIDTH - 4
             cpu.rs[0x1] = 2
 
             cpu.registerI = 0x200
@@ -493,7 +494,7 @@ describe("exec", () => {
             let cpu = aCPU({memory: new Uint8Array(0x300)})
 
             cpu.rs[0x0] = 4
-            cpu.rs[0x1] = CPU.SCREEN_HEIGHT - 2
+            cpu.rs[0x1] = IOMemoryMapper.SCREEN_HEIGHT - 2
             cpu.registerI = 0x200
 
             cpu.memory[0x200] = 0b11011111
@@ -700,7 +701,7 @@ describe("exec", () => {
         test("asci prints the screen", () => {
            let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++)
+            for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0b10111101
 
             expect(print(cpu)).toMatchSnapshot()
@@ -709,7 +710,7 @@ describe("exec", () => {
         test("should handle leading zeros well", () => {
             let cpu = aCPU({memory: new Uint8Array(0x200)})
 
-            for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++)
+            for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++)
                 cpu.memory[i] = 0x1
 
             expect(print(cpu)).toMatchSnapshot()
@@ -718,8 +719,10 @@ describe("exec", () => {
 })
 
 
+
 function aCPU(opts: Partial<CpuOptions> = {}): CPU {
-    let defaultOptions = {memory: new Uint8Array(10), stack: new Uint16Array(16), programStart: 0};
+    let memory = new Uint8Array(10);
+    let defaultOptions = {memory, programStart: 0, iomm: new IOMemoryMapper(opts.memory || memory)};
     let options = {...defaultOptions, ...opts}
     let cpu = new CPU(options)
 
@@ -730,7 +733,7 @@ export function print(cpu: CPU): string {
     let output = ""
     let cursor = 0
 
-    for (let i = CPU.SCREEN_BASE_ADDRESS; i < CPU.SCREEN_BASE_ADDRESS + CPU.SCREEN_SIZE; i++) {
+    for (let i = IOMemoryMapper.SCREEN_BASE_ADDRESS; i < IOMemoryMapper.SCREEN_BASE_ADDRESS + IOMemoryMapper.SCREEN_SIZE; i++) {
         if (cursor === 8) {
             output += "\n"
             cursor = 0
@@ -753,10 +756,10 @@ export function print(cpu: CPU): string {
 }
 
 function pressKey(cpu: CPU, key: number) {
-    cpu.memory[CPU.KEY_VALUE] = key
-    cpu.memory[CPU.KEY_PRESSED] = 0xff
+    cpu.memory[IOMemoryMapper.KEY_VALUE] = key
+    cpu.memory[IOMemoryMapper.KEY_PRESSED] = 0xff
 }
 
 function releaseKey(cpu: CPU) {
-    cpu.memory[CPU.KEY_PRESSED] = 0x00
+    cpu.memory[IOMemoryMapper.KEY_PRESSED] = 0x00
 }
