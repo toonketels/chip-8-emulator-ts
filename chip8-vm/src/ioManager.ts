@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 import {Bit12, Bit8} from "./types";
-import {IO, IOOps} from "./io";
+import {IO, IOOps} from "./index";
 
 export interface DeviceIoManager {
     pressKey(key: Bit8): void

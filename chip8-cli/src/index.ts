@@ -1,6 +1,6 @@
-import {VM} from "./vm";
 import path from "path";
-import {IOOps, TerminalIO} from "./io";
+import {TerminalIO} from "./io";
+import {createVM, IOOps} from "chip8-vm";
 
 
 main()
@@ -9,7 +9,7 @@ export function main() {
 
     let rom = parseArguments(process.argv)
 
-    const vm = new VM({rom, io: (ops: IOOps) => new TerminalIO(ops)})
+    const vm = createVM({rom, createIoDevice: (ops: IOOps) => new TerminalIO(ops)})
 
     vm.start()
 

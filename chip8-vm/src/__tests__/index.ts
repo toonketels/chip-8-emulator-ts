@@ -1,16 +1,16 @@
 import {VM} from "../vm";
 import path from "path";
 import {print} from "./vm"
-import {IO} from "../io";
+import {IO} from "../index";
 
 
 
 describe("Chip 8", () => {
 
     test("test_opcode", async () => {
-        let rom = path.resolve('roms/TEST_OPCODE');
+        let rom = path.resolve('../roms/TEST_OPCODE');
 
-        const vm = new VM({rom, io: () => new NoOpIO()})
+        const vm = new VM({rom, createIoDevice: () => new NoOpIO()})
 
         await vm.start({cycles: 200, cyclesPerFrame: 30})
         vm.stop()
@@ -18,9 +18,9 @@ describe("Chip 8", () => {
     })
 
     test("test i.chi8", async () => {
-        let rom = path.resolve('roms/i.ch8');
+        let rom = path.resolve('../roms/i.ch8');
 
-        const vm = new VM({rom, io: () => new NoOpIO()})
+        const vm = new VM({rom, createIoDevice: () => new NoOpIO()})
 
         await vm.start({cycles: 100, cyclesPerFrame: 30})
         vm.stop()
@@ -55,7 +55,7 @@ describe("Chip 8", () => {
         ["roms/VERS"],
         ["roms/WIPEOFF"]
     ])("executes the RON %s", (rom: string) => {
-        const vm = new VM({rom, io: () => new NoOpIO()})
+        const vm = new VM({rom: `../${rom}`, createIoDevice: () => new NoOpIO()})
 
         vm.start({cycles: 1000})
 

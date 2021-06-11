@@ -1,20 +1,6 @@
 import blessed from "blessed";
-import {DeviceIoManager} from "./ioManager";
+import {IO, IOOps} from "chip8-vm";
 
-export interface IO {
-
-    updatePixel(x: number, y: number, isOn: boolean): void
-
-    renderScreen(): void
-
-    clearScreen(): void
-}
-
-export interface IOOps {
-    screenWidth: number
-    screenHeight: number
-    iom: DeviceIoManager
-}
 
 export class TerminalIO implements IO {
 

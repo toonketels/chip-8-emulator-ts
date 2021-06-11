@@ -26,15 +26,20 @@ jobs:
       - store_test_results:
           path: ./reports/junit/
       - run:
-          name: Create dist tarball
-          command: tar -cvf dist.tar ./dist/
+          name: Create chip8-vm dist tarball
+          command: tar -cvf chip8-vm-dist.tar ./chip8-vm/dist/
+      - run:
+          name: Create chip8-cli dist tarball
+          command: tar -cvf chip8-cli-dist.tar ./chip8-cli/dist/
       - run:
           name: Create reports tarball
           command: tar -cvf reports.tar ./reports/
       - store_artifacts:
           path: ./reports.tar
       - store_artifacts:
-          path: ./dist.tar
+          path: ./chip8-vm-dist.tar
+      - store_artifacts:
+          path: ./chip8-cli-dist.tar
 
 workflows:
   test:

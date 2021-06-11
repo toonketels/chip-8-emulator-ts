@@ -1,28 +1,14 @@
 {
   "name": "chip-8-emulator-ts",
   "private": true,
-  "version": "1.0.0",
-  "description": "",
   "scripts": {
-    "start": "npm run build:live",
-    "build": "tsc -p .",
-    "build:live": "nodemon --watch 'src/**/*.ts' --exec \\\"ts-node\\\" src/vm.ts",
-    "test": "jest --coverage"
+    "start": "npm run build:liv --workspace=chip-8-vme",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "clean": "npm run clean --workspaces"
   },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/jest": "^26.0.23",
-    "@types/node": "^15.6.1",
-    "jest": "^26.6.3",
-    "jest-junit": "^12.2.0",
-    "nodemon": "^2.0.7",
-    "ts-jest": "^26.5.6",
-    "ts-node": "^10.0.0",
-    "typescript": "^4.2.4"
-  },
-  "dependencies": {
-    "@types/blessed": "^0.1.17",
-    "blessed": "^0.1.81"
-  }
+  "workspaces": [
+    "chip8-vm",
+    "chip8-cli"
+  ]
 }

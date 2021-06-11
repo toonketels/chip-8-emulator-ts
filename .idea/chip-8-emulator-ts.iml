@@ -10,6 +10,9 @@
       <excludeFolder url="file://$MODULE_DIR$/profiling" />
       <excludeFolder url="file://$MODULE_DIR$/reports" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/chip8-vm/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/chip8-vm/reports" />
+      <excludeFolder url="file://$MODULE_DIR$/chip8-cli/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

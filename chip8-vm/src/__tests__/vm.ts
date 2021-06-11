@@ -17,7 +17,7 @@ import {
 import {Bit12, Bit8} from "../types";
 import {CPU, CpuOptions} from "../cpu";
 import {IoManager} from "../ioManager";
-import {IO} from "../io";
+import {IO} from "../index";
 
 
 

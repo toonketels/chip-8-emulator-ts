@@ -1,7 +1,7 @@
 import * as fs from "fs";
-import {IO, IOOps} from "./io";
 import {CPU} from "./cpu";
 import {IoManager, VmIoManager} from "./ioManager";
+import {VMOps} from "./index";
 
 interface StartOps {
     cycles?: number,
@@ -30,10 +30,10 @@ export class VM {
     public iomm: VmIoManager
     public cpu: CPU
 
-    constructor(ops: {rom: string, io: (iomm: IOOps) => IO}) {
+    constructor(ops: VMOps) {
         this.romPath = ops.rom
         this.memory = new Uint8Array(VM.size_4K)
-        let iom =  new IoManager(this.memory, ops.io)
+        let iom =  new IoManager(this.memory, ops.createIoDevice)
         this.cpu =new CPU({memory: this.memory, programStart: 0x200, iom: iom})
         this.iomm = iom
     }
