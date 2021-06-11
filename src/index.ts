@@ -7,36 +7,31 @@ main()
 
 export function main() {
 
-    // let rom = path.resolve('roms/IBM');
-    // let rom = path.resolve('roms/chip8-test-rom.ch8');  // test ok
-
-    // let rom = path.resolve('roms/15PUZZLE');   // not sure but renders
-    // let rom = path.resolve('roms/BLINKY');   // issue rendering left side 1 pxl added
-    // let rom = path.resolve('roms/BLITZ');   // immediately goes to game over
-
-    // game: destroy the brix
-    //       4  left
-    //       5  stop
-    //       6  right
-    // issue: rendering, too fast, pauzes at some point
-    // let rom = path.resolve('roms/BRIX');
-
-    // game
-    // issue: too fast
-    // let rom = path.resolve('roms/CONNECT4');
-
-    // game
-    // issue: rendering
-    // let rom = path.resolve('roms/GUESS');
-
-    // game
-    // issue: doesnt wait
-    // let rom = path.resolve('roms/HIDDEN');
-
-    let rom = path.resolve('roms/INVADERS');
+    let rom = parseArguments(process.argv)
 
     const vm = new VM({rom, io: (ops: IOOps) => new TerminalIO(ops)})
 
     vm.start()
 
+}
+
+
+function parseArguments(argv: string[]): string {
+
+    let filePath = argv[2]
+
+    if (filePath === undefined) {
+        help()
+        process.exit(1)
+    }
+
+     return path.resolve(filePath);
+}
+
+
+function help() {
+
+    console.log("CHIP-8 EMULATOR")
+    console.log("")
+    console.log("node index.js <path to rom>")
 }
