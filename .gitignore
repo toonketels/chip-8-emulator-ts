@@ -3,6 +3,7 @@
 /INFO.md
 /NOTES.md
 /reports
+*.tsbuildinfo
 
 # User-specific stuff
 .idea/**/workspace.xml
