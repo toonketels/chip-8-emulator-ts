@@ -32,10 +32,10 @@ export class TerminalIO implements IO {
     // @TODO better typing
     handleKeypress(_: any, key: {full: string}) {
         switch (key.full) {
-            case 'q':
+            case 'escape':
                 process.exit()
                 break
-            case '0':
+            case 'x':
                 this.keypress(0x00)
                 break
             case '1':
@@ -47,40 +47,40 @@ export class TerminalIO implements IO {
             case '3':
                 this.keypress(0x03)
                 break
-            case '4':
+            case 'q':
                 this.keypress(0x04)
                 break
-            case '5':
+            case 'w':
                 this.keypress(0x05)
                 break
-            case '6':
+            case 'e':
                 this.keypress(0x06)
                 break
-            case '7':
+            case 'a':
                 this.keypress(0x07)
                 break
-            case '8':
+            case 's':
                 this.keypress(0x08)
                 break
-            case '9':
+            case 'd':
                 this.keypress(0x09)
                 break
-            case '0':
+            case 'z':
                 this.keypress(0x0a)
                 break
-            case 'b':
+            case 'c':
                 this.keypress(0x0b)
                 break
-            case 'c':
+            case '4':
                 this.keypress(0x0c)
                 break
-            case 'd':
+            case 'r':
                 this.keypress(0x0d)
                 break
-            case 'e':
+            case 'f':
                 this.keypress(0x0e)
                 break
-            case 'f':
+            case 'v':
                 this.keypress(0x0f)
                 break
         }
